@@ -20,6 +20,12 @@
 
 NetAcad course helper: answer databases, scrapers for ITExamAnswers.net, and the in-browser AutoRunner.
 
+## Demo
+
+AutoRunner working through a NetAcad course (Chrome extension, no audio):
+
+<video src="docs/autorunner-demo.mp4" controls width="100%"></video>
+
 ## Layout
 
 ```
@@ -34,6 +40,7 @@ netacad_automation/
 ├── tools/
 │   └── browser-probe.js  # NetAcad page fingerprint / script timeline probe
 ├── logs/                 # Output from browser-probe
+├── docs/                 # README demo video (muted MP4)
 └── extension/            # Chrome extension (see extension/README.md)
 ```
 

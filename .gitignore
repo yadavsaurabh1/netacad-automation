@@ -1,5 +1,6 @@
 node_modules/
 .DS_Store
+Screen Recording*.mov
 *.log
 scraper/logs/
 extension/runner.js
