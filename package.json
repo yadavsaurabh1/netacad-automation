@@ -1,0 +1,23 @@
+{
+    "name": "netacad-automation",
+    "version": "1.0.0",
+    "description": "NetAcad course automation: answer DBs, ITExamAnswers scraper, browser runner, extension (WIP)",
+    "license": "GPL-3.0-or-later",
+    "type": "module",
+    "scripts": {
+        "scrape:cyu": "node scraper/cyu-scrape.js",
+        "scrape:exam": "node scraper/exam-scrape.js",
+        "scrape:quiz": "node scraper/quiz-scrape.js",
+        "scrape:practice": "node scraper/practice-scrape.js",
+        "probe": "node tools/browser-probe.js",
+        "build:runner": "node scripts/build-runner.js",
+        "build:extension": "node scripts/build-extension.js",
+        "build": "npm run build:runner && npm run build:extension"
+    },
+    "dependencies": {
+        "puppeteer-core": "^24.32.1"
+    },
+    "devDependencies": {
+        "esbuild": "^0.28.0"
+    }
+}

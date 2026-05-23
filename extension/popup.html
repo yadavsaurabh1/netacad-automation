@@ -1,0 +1,54 @@
+<!--
+    netacad-automation
+    Copyright (C) 2026 Saurabh Kumar Yadav
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NetAcad AutoRunner</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>AutoRunner</h1>
+    <p id="state" class="state">Idle</p>
+  </header>
+
+  <label class="field" for="course">Course</label>
+  <select id="course">
+    <option value="ccna1">CCNA1 — Intro to Networks</option>
+    <option value="ccna2">CCNA2 — Switching &amp; Routing</option>
+    <option value="ccna3">CCNA3 — Enterprise &amp; Security</option>
+  </select>
+
+  <div class="actions">
+    <button type="button" id="start" class="btn primary">Start</button>
+    <button type="button" id="stop" class="btn" disabled>Stop</button>
+  </div>
+
+  <section class="log" aria-label="Activity">
+    <h2>Activity</h2>
+    <ul id="log"></ul>
+  </section>
+
+  <p id="hint" class="hint">Open www.netacad.com course tab first.</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>

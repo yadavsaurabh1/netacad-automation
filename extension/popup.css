@@ -1,0 +1,156 @@
+/*
+    netacad-automation
+    Copyright (C) 2026 Saurabh Kumar Yadav
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 12px;
+  width: 280px;
+  font: 13px/1.4 system-ui, -apple-system, sans-serif;
+  color: #e8e8e8;
+  background: #1a1a1a;
+}
+
+header {
+  margin-bottom: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+h2 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+}
+
+.state {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #6bcf7f;
+}
+
+.state.off {
+  color: #888;
+}
+
+.state.err {
+  color: #e07070;
+}
+
+.field {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: #888;
+}
+
+select {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 6px 8px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #252525;
+  color: #eee;
+  font: inherit;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #2a2a2a;
+  color: #eee;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: #333;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn.primary {
+  border-color: #3d7a4d;
+  background: #2d5a3a;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: #367044;
+}
+
+.log ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-height: 72px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.log li {
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  background: #252525;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.log li::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #4a8;
+  vertical-align: middle;
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: #666;
+}
+
+.hint.hidden {
+  display: none;
+}
