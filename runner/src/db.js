@@ -25,7 +25,7 @@ import {
     stripPtActivityBoilerplate,
     textSimilarity,
 } from './text.js';
-import { isCheckpointExam, isModuleQuiz, isPracticeExam } from './exam-type.js';
+import { isCheckpointExam, isFinalExam, isModuleQuiz, isPracticeExam } from './exam-type.js';
 
 function isProseCommaAnswer(parts) {
     if (parts.length !== 2) return false;
@@ -118,6 +118,22 @@ function collectPracticeExamSources() {
     return sources;
 }
 
+function collectFinalExamSources() {
+    const sources = [];
+    if (typeof FINAL_EXAM_DBS !== 'undefined') {
+        const raw = FINAL_EXAM_DBS;
+        if (Array.isArray(raw) && isAssessmentDatasetBundle(raw)) {
+            sources.push(...raw);
+        } else {
+            sources.push(raw);
+        }
+    }
+    if (typeof FINAL_EXAM_DB !== 'undefined') {
+        sources.push(FINAL_EXAM_DB);
+    }
+    return sources;
+}
+
 function findEntryByQuestionPrefix(map, qLookup, isCheckpoint) {
     const prefix = `${qLookup}::`;
     for (const [key, val] of map) {
@@ -132,7 +148,7 @@ function findEntryByQuestionPrefix(map, qLookup, isCheckpoint) {
 }
 
 function isAssessmentEntryMode(mode) {
-    return mode === 'checkpoint' || mode === 'practice';
+    return mode === 'checkpoint' || mode === 'practice' || mode === 'final';
 }
 
 export function findBestQuestionMatch(map, qText, isCheckpoint) {
@@ -216,6 +232,7 @@ export function initDatabases() {
     const quizMap = new Map();
     const checkpointMap = new Map();
     const practiceMap = new Map();
+    const finalExamMap = new Map();
 
     compileCyuDb(RAW_DB, cyuDb);
     if (typeof QUIZ_DB !== 'undefined') {
@@ -227,10 +244,19 @@ export function initDatabases() {
     for (const src of collectPracticeExamSources()) {
         compileAssessmentDb(src, practiceMap);
     }
+    for (const src of collectFinalExamSources()) {
+        compileAssessmentDb(src, finalExamMap);
+    }
 
     const entryLookupCache = new Map();
 
     function getActiveDb(doc) {
+        if (isFinalExam()) {
+            if (!finalExamMap.size) {
+                return { mode: 'final', ready: false, map: null };
+            }
+            return { mode: 'final', ready: true, map: finalExamMap };
+        }
         if (isPracticeExam()) {
             if (!practiceMap.size) {
                 return { mode: 'practice', ready: false, map: null };
@@ -253,6 +279,7 @@ export function initDatabases() {
     }
 
     function getDbTag(mode) {
+        if (mode === 'final') return '[Final]';
         if (mode === 'checkpoint') return '[Checkpoint]';
         if (mode === 'practice') return '[Practice]';
         if (mode === 'quiz') return '[Quiz]';
@@ -260,6 +287,7 @@ export function initDatabases() {
     }
 
     function getDbVarName(mode) {
+        if (mode === 'final') return 'FINAL_EXAM_DB / FINAL_EXAM_DBS';
         if (mode === 'checkpoint') return 'CHECKPOINT_DB';
         if (mode === 'practice') return 'PRACTICE_EXAM_DB / PRACTICE_EXAM_DBS';
         if (mode === 'quiz') return 'QUIZ_DB';
@@ -273,7 +301,7 @@ export function initDatabases() {
             return hit === LOOKUP_MISS ? null : hit;
         }
         const entry = lookupEntry(
-            { cyuDb, quizMap, checkpointMap, practiceMap },
+            { cyuDb, quizMap, checkpointMap, practiceMap, finalExamMap },
             activeDb,
             qText,
         );

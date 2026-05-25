@@ -31,7 +31,7 @@ import {
 import { createAssessmentHelpers } from './assessment.js';
 import { createContentHelpers } from './content.js';
 import { invalidateShadowCache, deepQuerySelectorAll } from './dom.js';
-import { isPracticeExam } from './exam-type.js';
+import { isSecureExam } from './exam-type.js';
 import { setStatus } from './status.js';
 import { extractCleanText } from './text.js';
 import {
@@ -62,7 +62,7 @@ export function createMainLoop(doc, win, databases) {
     let loopTicks = 0;
 
     function defaultActionCooldownMs() {
-        return isPracticeExam() ? TICK_MS_PRACTICE_AFTER : TICK_MS_AFTER_ACTION;
+        return isSecureExam() ? TICK_MS_PRACTICE_AFTER : TICK_MS_AFTER_ACTION;
     }
 
     function bumpCooldown(ms) {
@@ -72,13 +72,13 @@ export function createMainLoop(doc, win, databases) {
     }
 
     function getAssessmentPollMs() {
-        if (isPracticeExam()) return TICK_MS_PRACTICE_POLL;
+        if (isSecureExam()) return TICK_MS_PRACTICE_POLL;
         if (Date.now() - lastActionAt < POST_ACTION_FAST_POLL_MS) return TICK_MS_POST_ACTION_POLL;
         return TICK_MS_ASSESSMENT;
     }
 
     function getAssessmentIdleMs() {
-        return isPracticeExam() ? TICK_MS_PRACTICE_IDLE : TICK_MS_ASSESSMENT;
+        return isSecureExam() ? TICK_MS_PRACTICE_IDLE : TICK_MS_ASSESSMENT;
     }
 
     function getTickDelay() {
@@ -99,7 +99,7 @@ export function createMainLoop(doc, win, databases) {
 
     function scheduleAssessmentPoll() {
         const afterAction = Date.now() - lastActionAt < POST_ACTION_FAST_POLL_MS;
-        const delay = isPracticeExam()
+        const delay = isSecureExam()
             ? TICK_MS_PRACTICE_POLL
             : (afterAction ? TICK_MS_POST_ACTION_POLL : getAssessmentIdleMs());
         scheduleNextTick(delay);
@@ -157,7 +157,7 @@ export function createMainLoop(doc, win, databases) {
                     btn.click();
                     clickedButtons.add(btn);
                     setStatus('Start');
-                    bumpCooldown(isPracticeExam() ? 300 : 600);
+                    bumpCooldown(isSecureExam() ? 300 : 600);
                     invalidateShadowCache();
                     scheduleNextTick(getTickDelay());
                     return;
@@ -279,7 +279,7 @@ export function createMainLoop(doc, win, databases) {
                     entry,
                     qText,
                     doc,
-                    isPracticeExam(),
+                    isSecureExam(),
                 );
                 if (acted) {
                     setStatus('Answer');
@@ -287,7 +287,7 @@ export function createMainLoop(doc, win, databases) {
                 }
 
                 if (acted) {
-                    if (isPracticeExam() && isQuestionAnswered(qContainer) &&
+                    if (isSecureExam() && isQuestionAnswered(qContainer) &&
                         trySubmitAndAdvance(doc, qContainer)) {
                         bumpCooldown();
                         invalidateShadowCache();

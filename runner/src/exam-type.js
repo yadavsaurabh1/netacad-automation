@@ -55,6 +55,37 @@ export function isPracticeExam() {
     return false;
 }
 
+export function isFinalExamTitle(text) {
+    const t = (text || '').trim();
+    if (!t || /checkpoint/i.test(t) || /module\s+.*quiz/i.test(t)) return false;
+    if (/\bpractice\b/i.test(t)) return false;
+    if (/\bcourse\s+final\s+exam\b/i.test(t)) return true;
+    if (/\bfinal\s+exam\b/i.test(t)) return true;
+    return false;
+}
+
+export function isFinalExam() {
+    const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
+    for (const span of spans) {
+        if (isFinalExamTitle(span.textContent)) return true;
+    }
+    try {
+        const iframe = getTopDocument().querySelector('iframe[title="Course content"]');
+        const src = iframe?.getAttribute('src') || '';
+        let href = '';
+        try {
+            href = iframe?.contentWindow?.location?.href || '';
+        } catch {}
+        const route = `${src} ${href}`;
+        if (/course-final-exam|final-exam/i.test(route)) return true;
+    } catch {}
+    return false;
+}
+
+export function isSecureExam() {
+    return isPracticeExam() || isFinalExam();
+}
+
 export function isModuleQuiz(doc) {
     const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
     for (const span of spans) {

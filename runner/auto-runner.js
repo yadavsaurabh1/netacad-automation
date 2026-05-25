@@ -353,6 +353,36 @@
     }
     return false;
   }
+  function isFinalExamTitle(text) {
+    const t = (text || "").trim();
+    if (!t || /checkpoint/i.test(t) || /module\s+.*quiz/i.test(t)) return false;
+    if (/\bpractice\b/i.test(t)) return false;
+    if (/\bcourse\s+final\s+exam\b/i.test(t)) return true;
+    if (/\bfinal\s+exam\b/i.test(t)) return true;
+    return false;
+  }
+  function isFinalExam() {
+    const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
+    for (const span of spans) {
+      if (isFinalExamTitle(span.textContent)) return true;
+    }
+    try {
+      const iframe = getTopDocument().querySelector('iframe[title="Course content"]');
+      const src = iframe?.getAttribute("src") || "";
+      let href = "";
+      try {
+        href = iframe?.contentWindow?.location?.href || "";
+      } catch {
+      }
+      const route = `${src} ${href}`;
+      if (/course-final-exam|final-exam/i.test(route)) return true;
+    } catch {
+    }
+    return false;
+  }
+  function isSecureExam() {
+    return isPracticeExam() || isFinalExam();
+  }
   function isModuleQuiz(doc) {
     const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
     for (const span of spans) {
@@ -441,6 +471,21 @@
     }
     return sources;
   }
+  function collectFinalExamSources() {
+    const sources = [];
+    if (typeof FINAL_EXAM_DBS !== "undefined") {
+      const raw = FINAL_EXAM_DBS;
+      if (Array.isArray(raw) && isAssessmentDatasetBundle(raw)) {
+        sources.push(...raw);
+      } else {
+        sources.push(raw);
+      }
+    }
+    if (typeof FINAL_EXAM_DB !== "undefined") {
+      sources.push(FINAL_EXAM_DB);
+    }
+    return sources;
+  }
   function findEntryByQuestionPrefix(map, qLookup, isCheckpoint) {
     const prefix = `${qLookup}::`;
     for (const [key, val] of map) {
@@ -454,7 +499,7 @@
     return null;
   }
   function isAssessmentEntryMode(mode) {
-    return mode === "checkpoint" || mode === "practice";
+    return mode === "checkpoint" || mode === "practice" || mode === "final";
   }
   function findBestQuestionMatch(map, qText, isCheckpoint) {
     const qLookup = stripPtActivityBoilerplate(qText) || qText;
@@ -526,6 +571,7 @@
     const quizMap = /* @__PURE__ */ new Map();
     const checkpointMap = /* @__PURE__ */ new Map();
     const practiceMap = /* @__PURE__ */ new Map();
+    const finalExamMap = /* @__PURE__ */ new Map();
     compileCyuDb(RAW_DB, cyuDb);
     if (typeof QUIZ_DB !== "undefined") {
       compileCyuDb(QUIZ_DB, quizMap);
@@ -536,8 +582,17 @@
     for (const src of collectPracticeExamSources()) {
       compileAssessmentDb(src, practiceMap);
     }
+    for (const src of collectFinalExamSources()) {
+      compileAssessmentDb(src, finalExamMap);
+    }
     const entryLookupCache = /* @__PURE__ */ new Map();
     function getActiveDb(doc) {
+      if (isFinalExam()) {
+        if (!finalExamMap.size) {
+          return { mode: "final", ready: false, map: null };
+        }
+        return { mode: "final", ready: true, map: finalExamMap };
+      }
       if (isPracticeExam()) {
         if (!practiceMap.size) {
           return { mode: "practice", ready: false, map: null };
@@ -559,12 +614,14 @@
       return { mode: "cyu", ready: true, map: cyuDb };
     }
     function getDbTag(mode) {
+      if (mode === "final") return "[Final]";
       if (mode === "checkpoint") return "[Checkpoint]";
       if (mode === "practice") return "[Practice]";
       if (mode === "quiz") return "[Quiz]";
       return "[CYU]";
     }
     function getDbVarName(mode) {
+      if (mode === "final") return "FINAL_EXAM_DB / FINAL_EXAM_DBS";
       if (mode === "checkpoint") return "CHECKPOINT_DB";
       if (mode === "practice") return "PRACTICE_EXAM_DB / PRACTICE_EXAM_DBS";
       if (mode === "quiz") return "QUIZ_DB";
@@ -577,7 +634,7 @@
         return hit === LOOKUP_MISS ? null : hit;
       }
       const entry = lookupEntry(
-        { cyuDb, quizMap, checkpointMap, practiceMap },
+        { cyuDb, quizMap, checkpointMap, practiceMap, finalExamMap },
         activeDb,
         qText
       );
@@ -1531,7 +1588,7 @@
     let lastActionAt = 0;
     let loopTicks = 0;
     function defaultActionCooldownMs() {
-      return isPracticeExam() ? TICK_MS_PRACTICE_AFTER : TICK_MS_AFTER_ACTION;
+      return isSecureExam() ? TICK_MS_PRACTICE_AFTER : TICK_MS_AFTER_ACTION;
     }
     function bumpCooldown(ms) {
       const delay = ms ?? defaultActionCooldownMs();
@@ -1539,12 +1596,12 @@
       lastActionAt = Date.now();
     }
     function getAssessmentPollMs() {
-      if (isPracticeExam()) return TICK_MS_PRACTICE_POLL;
+      if (isSecureExam()) return TICK_MS_PRACTICE_POLL;
       if (Date.now() - lastActionAt < POST_ACTION_FAST_POLL_MS) return TICK_MS_POST_ACTION_POLL;
       return TICK_MS_ASSESSMENT;
     }
     function getAssessmentIdleMs() {
-      return isPracticeExam() ? TICK_MS_PRACTICE_IDLE : TICK_MS_ASSESSMENT;
+      return isSecureExam() ? TICK_MS_PRACTICE_IDLE : TICK_MS_ASSESSMENT;
     }
     function getTickDelay() {
       if (runtime.isPaused || runtime.isAdvancing) return 300;
@@ -1562,7 +1619,7 @@
     }
     function scheduleAssessmentPoll() {
       const afterAction = Date.now() - lastActionAt < POST_ACTION_FAST_POLL_MS;
-      const delay = isPracticeExam() ? TICK_MS_PRACTICE_POLL : afterAction ? TICK_MS_POST_ACTION_POLL : getAssessmentIdleMs();
+      const delay = isSecureExam() ? TICK_MS_PRACTICE_POLL : afterAction ? TICK_MS_POST_ACTION_POLL : getAssessmentIdleMs();
       scheduleNextTick(delay);
     }
     function runMainTick() {
@@ -1612,7 +1669,7 @@
             btn.click();
             clickedButtons.add(btn);
             setStatus("Start");
-            bumpCooldown(isPracticeExam() ? 300 : 600);
+            bumpCooldown(isSecureExam() ? 300 : 600);
             invalidateShadowCache();
             scheduleNextTick(getTickDelay());
             return;
@@ -1715,14 +1772,14 @@
             entry,
             qText,
             doc,
-            isPracticeExam()
+            isSecureExam()
           );
           if (acted) {
             setStatus("Answer");
             bumpCooldown();
           }
           if (acted) {
-            if (isPracticeExam() && isQuestionAnswered(qContainer) && trySubmitAndAdvance(doc, qContainer)) {
+            if (isSecureExam() && isQuestionAnswered(qContainer) && trySubmitAndAdvance(doc, qContainer)) {
               bumpCooldown();
               invalidateShadowCache();
             }

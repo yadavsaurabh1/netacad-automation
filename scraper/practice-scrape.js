@@ -35,9 +35,7 @@ import {
     validatePayload,
 } from "./shared.js";
 
-const DEFAULT_URL =
-    "https://itexamanswers.net/ccna-2-version-7-00-srwe-practice-final-exam-answers.html";
-
+const DEFAULT_URL = "https://itexamanswers.net/ccna-3-v7-0-final-exam-answers-full-enterprise-networking-security-and-automation.html";
 const HELP = `Usage: node scraper/practice-scrape.js [--url URL] [--executable PATH]`;
 
 const opts = parseBrowserArgs(process.argv, { url: DEFAULT_URL, maxPages: 1 });

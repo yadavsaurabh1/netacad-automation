@@ -7026,3 +7026,1309 @@ const PRACTICE_EXAM_DB = [
     }
   ]
 ];
+
+const FINAL_EXAM_DB = [
+  {
+    "question": "Which design feature will limit the size of a failure domain in an enterprise network?",
+    "answers": [
+      "the use of the building switch block approach"
+    ]
+  },
+  {
+    "question": "Which two things should a network administrator modify on a router to perform password recovery? (Choose two.)",
+    "answers": [
+      "the configuration register value",
+      "the startup configuration file"
+    ]
+  },
+  {
+    "question": "What type of network uses one common infrastructure to carry voice, data, and video signals?",
+    "answers": [
+      "converged"
+    ]
+  },
+  {
+    "question": "What are three advantages of using private IP addresses and NAT? (Choose three.)",
+    "answers": [
+      "hides private LAN addressing from outside devices that are connected to the Internet",
+      "permits LAN expansion without additional public IP addresses",
+      "conserves registered public IP addresses"
+    ]
+  },
+  {
+    "question": "Which two scenarios are examples of remote access VPNs? (Choose two.)",
+    "answers": [
+      "A mobile sales agent is connecting to the company network via the Internet connection at a hotel.",
+      "An employee who is working from home uses VPN client software on a laptop in order to connect to the company network."
+    ]
+  },
+  {
+    "question": "What are three benefits of cloud computing? (Choose three.)",
+    "answers": [
+      "It streamlines the IT operations of an organization by subscribing only to needed services.",
+      "It enables access to organizational data anywhere and at any time.",
+      "It eliminates or reduces the need for onsite IT equipment, maintenance, and management."
+    ]
+  },
+  {
+    "question": "What is a characteristic of a single-area OSPF network?",
+    "answers": [
+      "All routers are in the backbone area."
+    ]
+  },
+  {
+    "question": "What is a WAN?",
+    "answers": [
+      "a network infrastructure that provides access to other networks over a large geographic area"
+    ]
+  },
+  {
+    "question": "A network administrator has been tasked with creating a disaster recovery plan. As part of this plan, the administrator is looking for a backup site for all of the data on the company servers. What service or technology would support this requirement?",
+    "answers": [
+      "data center"
+    ]
+  },
+  {
+    "question": "Which type of OSPF packet is used by a router to discover neighbor routers and establish neighbor adjacency?",
+    "answers": [
+      "hello"
+    ]
+  },
+  {
+    "question": "Which two statements are characteristics of a virus? (Choose two.)",
+    "answers": [
+      "A virus can be dormant and then activate at a specific time or date.",
+      "A virus typically requires end-user activation."
+    ]
+  },
+  {
+    "question": "Which public WAN access technology utilizes copper telephone lines to provide access to subscribers that are multiplexed into a single T3 link connection?",
+    "answers": [
+      "DSL"
+    ]
+  },
+  {
+    "question": "A customer needs a metropolitan area WAN connection that provides high-speed, dedicated bandwidth between two sites. Which type of WAN connection would best fulfill this need?",
+    "answers": [
+      "Ethernet WAN"
+    ]
+  },
+  {
+    "question": "A company has contracted with a network security firm to help identify the vulnerabilities of the corporate network. The firm sends a team to perform penetration tests to the company network. Why would the team use debuggers?",
+    "answers": [
+      "to reverse engineer binary files when writing exploits and when analyzing malware"
+    ]
+  },
+  {
+    "question": "Consider the following output for an ACL that has been applied to a router via the access-class in command. What can a network administrator determine from the output that is shown?",
+    "answers": [
+      "Two devices were able to use SSH or Telnet to gain access to the router."
+    ]
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to clear dynamic entries before the timeout has expired?",
+    "answers": [
+      "clear ip nat translation"
+    ]
+  },
+  {
+    "question": "What are two characteristics of video traffic? (Choose two.)",
+    "answers": [
+      "Video traffic latency should not exceed 400 ms.",
+      "Video traffic is unpredictable and inconsistent."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A technician is configuring R2 for static NAT to allow the client to access the web server. What is a possible reason that the client PC cannot access the web server?",
+    "answers": [
+      "Interface S0/0/0 should be identified as the outside NAT interface."
+    ]
+  },
+  {
+    "question": "In setting up a small office network, the network administrator decides to assign private IP addresses dynamically to workstations and mobile devices. Which feature must be enabled on the company router in order for office devices to access the internet?",
+    "answers": [
+      "NAT"
+    ]
+  },
+  {
+    "question": "A data center has recently updated a physical server to host multiple operating systems on a single CPU. The data center can now provide each customer with a separate web server without having to allocate an actual discrete server for each customer. What is the networking trend that is being implemented by the data center in this situation?",
+    "answers": [
+      "virtualization"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Which address or addresses represent the inside global address?",
+    "answers": [
+      "209.165.20.25"
+    ]
+  },
+  {
+    "question": "Which two IPsec protocols are used to provide data integrity?",
+    "answers": [
+      "MD5",
+      "SHA"
+    ]
+  },
+  {
+    "question": "If an outside host does not have the Cisco AnyConnect client preinstalled, how would the host gain access to the client image?",
+    "answers": [
+      "The host initiates a clientless VPN connection using a compliant web browser to download the client."
+    ]
+  },
+  {
+    "question": "A company is considering updating the campus WAN connection. Which two WAN options are examples of the private WAN architecture? (Choose two.)",
+    "answers": [
+      "leased line",
+      "Ethernet WAN"
+    ]
+  },
+  {
+    "question": "Which type of QoS marking is applied to Ethernet frames?",
+    "answers": [
+      "CoS"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Routers R1 and R2 are connected via a serial link. One router is configured as the NTP master, and the other is an NTP client. Which two pieces of information can be obtained from the partial output of the show ntp associations detail command on R2? (Choose two.)",
+    "answers": [
+      "Router R1 is the master, and R2 is the client",
+      "The IP address of R1 is 192.168.1.2"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. The network administrator that has the IP address of 10.0.70.23/25 needs to have access to the corporate FTP server (10.0.54.5/28). The FTP server is also a web server that is accessible to all internal employees on networks within the 10.x.x.x address. No other traffic should be allowed to this server. Which extended ACL would be used to filter this traffic, and how would this ACL be applied? (Choose two.)",
+    "manual": true,
+    "answers": [],
+    "imageUrl": "https://itexamanswers.net/wp-content/uploads/2015/06/i209858v1n1_209858.png"
+  },
+  {
+    "question": "Refer to the exhibit. If the network administrator created a standard ACL that allows only devices that connect to the R2 G0/0 network access to the devices on the R1 G0/1 interface, how should the ACL be applied?",
+    "answers": [
+      "outbound on the R1 G0/1 interface"
+    ]
+  },
+  {
+    "question": "Which is a characteristic of a Type 2 hypervisor?​",
+    "answers": [
+      "does not require management console software"
+    ]
+  },
+  {
+    "question": "What are the two types of VPN connections? (Choose two.)",
+    "answers": [
+      "site-to-site",
+      "remote access"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. What three conclusions can be drawn from the displayed output? (Choose three.)",
+    "answers": [
+      "The DR can be reached through the GigabitEthernet 0/0 interface.",
+      "There have been 9 seconds since the last hello packet sent.",
+      "The router ID values were not the criteria used to select the DR and the BDR."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator is configuring an ACL to limit the connection to R1 vty lines to only the IT group workstations in the network 192.168.22.0/28. The administrator verifies the successful Telnet connections from a workstation with IP 192.168.22.5 to R1 before the ACL is applied. However, after the ACL is applied to the interface Fa0/0, Telnet connections are denied. What is the cause of the connection failure?",
+    "answers": [
+      "The IT group network is included in the deny statement."
+    ]
+  },
+  {
+    "question": "What functionality does mGRE provide to the DMVPN technology?",
+    "answers": [
+      "It allows the creation of dynamically allocated tunnels through a permanent tunnel source at the hub and dynamically allocated tunnel destinations at the spokes."
+    ]
+  },
+  {
+    "question": "What is used to pre-populate the adjacency table on Cisco devices that use CEF to process packets?",
+    "answers": [
+      "the ARP table"
+    ]
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to display information about NAT configuration parameters and the number of addresses in the pool?",
+    "answers": [
+      "show ip nat statistics"
+    ]
+  },
+  {
+    "question": "What is a purpose of establishing a network baseline?",
+    "answers": [
+      "It creates a point of reference for future network evaluations."
+    ]
+  },
+  {
+    "question": "Match the type of WAN device or service to the description. (Not all options are used.)",
+    "answers": [
+      "CPE -> devices and inside wiring that are located on the enterprise edge and connect to a carrier link",
+      "DCE -> devices that provide an interface for customers to connect to within the WAN cloud",
+      "DTE -> customer devices that pass the data from a customer network for transmission over the WAN",
+      "local loop -> a physical connection from the customer to the service provider POP"
+    ]
+  },
+  {
+    "question": "Which statement describes a characteristic of standard IPv4 ACLs?",
+    "answers": [
+      "They filter traffic based on source IP addresses only."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. R1 is configured for NAT as displayed. What is wrong with the configuration?",
+    "answers": [
+      "NAT-POOL2 is not bound to ACL 1."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. What method can be used to enable an OSPF router to advertise a default route to neighboring OSPF routers?",
+    "answers": [
+      "Use the default-information originate command on R0-A."
+    ]
+  },
+  {
+    "question": "A company has contracted with a network security firm to help identify the vulnerabilities of the corporate network. The firm sends a team to perform penetration tests to the company network. Why would the team use applications such as John the Ripper,THC Hydra, RainbowCrack, and Medusa?",
+    "answers": [
+      "to make repeated guesses in order to crack a password"
+    ]
+  },
+  {
+    "question": "What are two syntax rules for writing a JSON array? (Choose two.)",
+    "answers": [
+      "Each value in the array is separated by a comma.",
+      "Values are enclosed in square brackets."
+    ]
+  },
+  {
+    "question": "What is a characteristic of a Trojan horse as it relates to network security?",
+    "answers": [
+      "Malware is contained in a seemingly legitimate executable program."
+    ]
+  },
+  {
+    "question": "An attacker is redirecting traffic to a false default gateway in an attempt to intercept the data traffic of a switched network. What type of attack could achieve this?",
+    "answers": [
+      "DHCP spoofing"
+    ]
+  },
+  {
+    "question": "A company is developing a security policy for secure communication. In the exchange of critical messages between a headquarters office and a branch office, a hash value should only be recalculated with a predetermined code, thus ensuring the validity of data source. Which aspect of secure communications is addressed?",
+    "answers": [
+      "origin authentication"
+    ]
+  },
+  {
+    "question": "A company has contracted with a network security firm to help identify the vulnerabilities of the corporate network. The firm sends a team to perform penetration tests to the company network. Why would the team use packet sniffers?",
+    "answers": [
+      "to capture and analyze packets within traditional Ethernet LANs or WLANs"
+    ]
+  },
+  {
+    "question": "An administrator is configuring single-area OSPF on a router. One of the networks that must be advertised is 172.20.0.0 255.255.252.0. What wildcard mask would the administrator use in the OSPF network statement?",
+    "answers": [
+      "0.0.3.255"
+    ]
+  },
+  {
+    "question": "Match the HTTP method with the RESTful operation.",
+    "answers": [
+      "POST -> Create",
+      "GET -> Read",
+      "PUT/PATCH -> Update/Replace?Modify",
+      "Delete -> Delete"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. What is the OSPF cost to reach the West LAN 172.16.2.0/24 from East?​",
+    "answers": [
+      "65"
+    ]
+  },
+  {
+    "question": "What is one reason to use the ip ospf priority command when the OSPF routing protocol is in use?",
+    "answers": [
+      "to influence the DR/BDR election process"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:",
+    "answers": [
+      "permitted"
+    ]
+  },
+  {
+    "question": "What is a characteristic of the two-tier spine-leaf topology of the Cisco ACI fabric architecture?​",
+    "answers": [
+      "The leaf switches always attach to the spines, but they never attach to each other."
+    ]
+  },
+  {
+    "question": "Which two scenarios would result in a duplex mismatch? (Choose two.)",
+    "answers": [
+      "connecting a device with autonegotiation to another that is manually set to full-duplex",
+      "manually setting the two connected devices to different duplex modes"
+    ]
+  },
+  {
+    "question": "A network technician is configuring SNMPv3 and has set a security level of auth . What is the effect of this setting?",
+    "answers": [
+      "authenticates a packet by using either the HMAC with MD5 method or the SHA method"
+    ]
+  },
+  {
+    "question": "What are two types of attacks used on DNS open resolvers? (Choose two.)",
+    "answers": [
+      "amplification and reflection",
+      "resource utilization"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:",
+    "answers": [
+      "denied",
+      "denied"
+    ]
+  },
+  {
+    "question": "Which type of resources are required for a Type 1 hypervisor?",
+    "answers": [
+      "a management console"
+    ]
+  },
+  {
+    "question": "In JSON, what is held within square brackets [ ]?",
+    "answers": [
+      "an array"
+    ]
+  },
+  {
+    "question": "What are three components used in the query portion of a typical RESTful API request? (Choose three.)",
+    "answers": [
+      "format",
+      "key",
+      "parameters"
+    ]
+  },
+  {
+    "question": "A user reports that when the corporate web page URL is entered on a web browser, an error message indicates that the page cannot be displayed. The help-desk technician asks the user to enter the IP address of the web server to see if the page can be displayed. Which troubleshooting method is being used by the technician?",
+    "answers": [
+      "divide-and-conquer"
+    ]
+  },
+  {
+    "question": "Which protocol provides authentication, integrity, and confidentiality services and is a type of VPN?",
+    "answers": [
+      "IPsec"
+    ]
+  },
+  {
+    "question": "Which statement describes a characteristic of Cisco Catalyst 2960 switches?",
+    "answers": [
+      "New Cisco Catalyst 2960-C switches support PoE pass-through."
+    ]
+  },
+  {
+    "question": "Which component of the ACI architecture translates application policies into network programming?",
+    "answers": [
+      "the Application Policy Infrastructure Controller"
+    ]
+  },
+  {
+    "question": "Which two pieces of information should be included in a logical topology diagram of a network? (Choose two.)",
+    "answers": [
+      "interface identifier",
+      "connection type"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A PC at address 10.1.1.45 is unable to access the Internet. What is the most likely cause of the problem?",
+    "answers": [
+      "The NAT pool has been exhausted."
+    ]
+  },
+  {
+    "question": "What are two benefits of using SNMP traps? (Choose two.)",
+    "answers": [
+      "They eliminate the need for some periodic polling requests.",
+      "They reduce the load on network and agent resources."
+    ]
+  },
+  {
+    "question": "Which statement accurately describes a characteristic of IPsec?",
+    "answers": [
+      "IPsec is a framework of open standards that relies on existing algorithms."
+    ]
+  },
+  {
+    "question": "In a large enterprise network, which two functions are performed by routers at the distribution layer? (Choose two.)",
+    "answers": [
+      "connect remote networks",
+      "provide data traffic security"
+    ]
+  },
+  {
+    "question": "Which two statements describe the use of asymmetric algorithms? (Choose two.)",
+    "answers": [
+      "If a private key is used to encrypt the data, a public key must be used to decrypt the data.",
+      "If a public key is used to encrypt the data, a private key must be used to decrypt the data."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator has deployed QoS and has configured the network to mark traffic on the VoIP phones as well as the Layer 2 and Layer 3 switches. Where should initial marking occur to establish the trust boundary?",
+    "answers": [
+      "Trust Boundary 1"
+    ]
+  },
+  {
+    "question": "What are two benefits of extending access layer connectivity to users through a wireless medium? (Choose two.)",
+    "answers": [
+      "reduced costs",
+      "increased flexibility"
+    ]
+  },
+  {
+    "question": "What are two purposes of launching a reconnaissance attack on a network? (Choose two.)",
+    "answers": [
+      "to scan for accessibility",
+      "to gather information about the network and devices"
+    ]
+  },
+  {
+    "question": "A group of users on the same network are all complaining about their computers running slowly. After investigating, the technician determines that these computers are part of a zombie network. Which type of malware is used to control these computers?",
+    "answers": [
+      "botnet"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:",
+    "answers": [
+      "denied"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. From which location did this router load the IOS?",
+    "answers": [
+      "flash memory"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Which data format is used to represent the data for network automation applications?",
+    "answers": [
+      "JSON"
+    ]
+  },
+  {
+    "question": "What QoS step must occur before packets can be marked?",
+    "answers": [
+      "classifying"
+    ]
+  },
+  {
+    "question": "What is the main function of a hypervisor?",
+    "answers": [
+      "It is used to create and manage multiple VM instances on a host machine."
+    ]
+  },
+  {
+    "question": "A company needs to interconnect several branch offices across a metropolitan area. The network engineer is seeking a solution that provides high-speed converged traffic, including voice, video, and data on the same network infrastructure. The company also wants easy integration to their existing LAN infrastructure in their office locations. Which technology should be recommended?",
+    "answers": [
+      "Ethernet WAN"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. As traffic is forwarded out an egress interface with QoS treatment, which congestion avoidance technique is used?",
+    "answers": [
+      "traffic policing"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:",
+    "answers": [
+      "denied"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. What is the purpose of the command marked with an arrow shown in the partial configuration output of a Cisco broadband router?",
+    "answers": [
+      "defines which addresses can be translated"
+    ]
+  },
+  {
+    "question": "If a router has two interfaces and is routing both IPv4 and IPv6 traffic, how many ACLs could be created and applied to it?",
+    "answers": [
+      "8"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. An administrator first configured an extended ACL as shown by the output of the show access-lists command. The administrator then edited this access-list by issuing the commands below.",
+    "answers": [
+      "Ping packets will be permitted.",
+      "SSH packets will be permitted."
+    ]
+  },
+  {
+    "question": "Which troubleshooting approach is more appropriate for a seasoned network administrator rather than a less-experienced network administrator?",
+    "answers": [
+      "a less-structured approach based on an educated guess"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Many employees are wasting company time accessing social media on their work computers. The company wants to stop this access. What is the best ACL type and placement to use in this situation?",
+    "answers": [
+      "extended ACLs inbound on R1 G0/0 and G0/1"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. An administrator is trying to configure PAT on R1, but PC-A is unable to access the Internet. The administrator tries to ping a server on the Internet from PC-A and collects the debugs that are shown in the exhibit. Based on this output, what is most likely the cause of the problem?",
+    "answers": [
+      "The inside global address is not on the same subnet as the ISP"
+    ]
+  },
+  {
+    "question": "Why is QoS an important issue in a converged network that combines voice, video, and data communications?",
+    "answers": [
+      "Voice and video communications are more sensitive to latency."
+    ]
+  },
+  {
+    "question": "Which statement describes a VPN?",
+    "answers": [
+      "VPNs use virtual connections to create a private network through a public network."
+    ]
+  },
+  {
+    "question": "In which OSPF state is the DR/BDR election conducted?",
+    "answers": [
+      "Two-Way"
+    ]
+  },
+  {
+    "question": "Two corporations have just completed a merger. The network engineer has been asked to connect the two corporate networks without the expense of leased lines. Which solution would be the most cost effective method of providing a proper and secure connection between the two corporate networks?",
+    "answers": [
+      "site-to-site VPN"
+    ]
+  },
+  {
+    "question": "What is the final operational state that will form between an OSPF DR and a DROTHER once the routers reach convergence?",
+    "answers": [
+      "full"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. If the switch reboots and all routers have to re-establish OSPF adjacencies, which routers will become the new DR and BDR?",
+    "answers": [
+      "Router R3 will become the DR and router R1 will become the BDR."
+    ]
+  },
+  {
+    "question": "Which type of server would be used to keep a historical record of messages from monitored network devices?",
+    "answers": [
+      "syslog"
+    ]
+  },
+  {
+    "question": "When QoS is implemented in a converged network, which two factors can be controlled to improve network performance for real-time traffic? (Choose two.)",
+    "answers": [
+      "delay",
+      "jitter"
+    ]
+  },
+  {
+    "question": "In which step of gathering symptoms does the network engineer determine if the problem is at the core, distribution, or access layer of the network?",
+    "answers": [
+      "Narrow the scope."
+    ]
+  },
+  {
+    "question": "What protocol sends periodic advertisements between connected Cisco devices in order to learn device name, IOS version, and the number and type of interfaces?",
+    "answers": [
+      "CDP"
+    ]
+  },
+  {
+    "question": "An administrator is configuring single-area OSPF on a router. One of the networks that must be advertised is 192.168.0.0 255.255.252.0. What wildcard mask would the administrator use in the OSPF network statement?",
+    "answers": [
+      "0.0.3.255"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. An administrator configures the following ACL in order to prevent devices on the 192.168.1.0 subnet from accessing the server at 10.1.1.5:",
+    "answers": [
+      "inbound on router A Fa0/0"
+    ]
+  },
+  {
+    "question": "Which type of OSPFv2 packet is used to forward OSPF link change information?",
+    "answers": [
+      "link-state update"
+    ]
+  },
+  {
+    "question": "What protocol synchronizes with a private master clock or with a publicly available server on the internet?",
+    "answers": [
+      "NTP"
+    ]
+  },
+  {
+    "question": "Which type of VPN allows multicast and broadcast traffic over a secure site-to-site VPN?",
+    "answers": [
+      "GRE over IPsec"
+    ]
+  },
+  {
+    "question": "An OSPF router has three directly connected networks; 10.0.0.0/16, 10.1.0.0/16, and 10.2.0.0/16. Which OSPF network command would advertise only the 10.1.0.0 network to neighbors?",
+    "answers": [
+      "router(config-router)# network 10.1.0.0 0.0.255.255 area 0"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Which sequence of commands should be used to configure router A for OSPF?",
+    "manual": true,
+    "answers": [],
+    "imageUrl": "https://itexamanswers.net/wp-content/uploads/2021/02/i386046n1v2-1613220070.9736.gif"
+  },
+  {
+    "question": "An administrator is configuring single-area OSPF on a router. One of the networks that must be advertised is 192.168.0.0 255.255.254.0. What wildcard mask would the administrator use in the OSPF network statement?",
+    "answers": [
+      "0.0.1.255"
+    ]
+  },
+  {
+    "question": "How does virtualization help with disaster recovery within a data center?",
+    "answers": [
+      "support of live migration"
+    ]
+  },
+  {
+    "question": "How does virtualization help with disaster recovery within a data center?",
+    "answers": [
+      "Hardware does not have to be identical.",
+      "(Other case) Hardware at the recovery site does not have to be identical to production equipment."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Which devices exist in the failure domain when switch S3 loses power?",
+    "answers": [
+      "PC_3 and AP_2"
+    ]
+  },
+  {
+    "question": "Which set of access control entries would allow all users on the 192.168.10.0/24 network to access a web server that is located at 172.17.80.1, but would not allow them to use Telnet?",
+    "manual": true,
+    "answers": [],
+    "missingAnswers": true
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator needs to add an ACE to the TRAFFIC-CONTROL ACL that will deny IP traffic from the subnet 172.23.16.0/20. Which ACE will meet this requirement?",
+    "answers": [
+      "5 deny 172.23.16.0 0.0.15.255"
+    ]
+  },
+  {
+    "question": "Which step in the link-state routing process is described by a router building a link-state database based on received LSAs?",
+    "answers": [
+      "building the topology table"
+    ]
+  },
+  {
+    "question": "What protocol uses agents, that reside on managed devices, to collect and store information about the device and its operation?",
+    "answers": [
+      "SNMP"
+    ]
+  },
+  {
+    "question": "An administrator is configuring single-area OSPF on a router. One of the networks that must be advertised is 10.27.27.0 255.255.255.0. What wildcard mask would the administrator use in the OSPF network statement?",
+    "answers": [
+      "0.0.0.255"
+    ]
+  },
+  {
+    "question": "When will an OSPF-enabled router transition from the Down state to the Init state?",
+    "answers": [
+      "when an OSPF-enabled interface becomes active"
+    ]
+  },
+  {
+    "question": "What type of traffic is described as having a high volume of data per packet?",
+    "answers": [
+      "video"
+    ]
+  },
+  {
+    "question": "What protocol is a vendor-neutral Layer 2 protocol that advertises the identity and capabilities of the host device to other connected network devices?",
+    "answers": [
+      "LLDP"
+    ]
+  },
+  {
+    "question": "Which step in the link-state routing process is described by a router running an algorithm to determine the best path to each destination?",
+    "answers": [
+      "executing the SPF algorithm"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Which conclusion can be drawn from this OSPF multiaccess network?",
+    "answers": [
+      "With an election of the DR, the number of adjacencies is reduced from 6 to 3."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. The network administrator has an IP address of 192.168.11.10 and needs access to manage R1. What is the best ACL type and placement to use in this situation?",
+    "answers": [
+      "standard ACL inbound on R1 vty lines"
+    ]
+  },
+  {
+    "question": "Which type of VPN connects using the Transport Layer Security (TLS) feature?",
+    "answers": [
+      "SSL VPN"
+    ]
+  },
+  {
+    "question": "Which group of APIs are used by an SDN controller to communicate with various applications?",
+    "answers": [
+      "northbound APIs"
+    ]
+  },
+  {
+    "question": "A company has consolidated a number of servers and it is looking for a program or firmware to create and control virtual machines which have access to all the hardware of the consolidated servers. What service or technology would support this requirement?",
+    "answers": [
+      "Type-1 hypervisor"
+    ]
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to identify inside local addresses that are to be translated?",
+    "answers": [
+      "access-list 10 permit 172.19.89.0 0.0.0.255"
+    ]
+  },
+  {
+    "question": "Anycompany has decided to reduce its environmental footprint by reducing energy costs, moving to a smaller facility, and promoting telecommuting, what service or technology would support requirement?",
+    "answers": [
+      "Cloud services"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. An administrator is trying to back up the current running configuration of the router to a USB drive, and enters the command copy usbflash0:/R1-config running-config on the router command line. After removing the USB drive and connecting it to a PC, the administrator discovers that the running configuration was not properly backed up to the R1-config file. What is the problem?",
+    "answers": [
+      "The command that the administrator used was incorrect."
+    ]
+  },
+  {
+    "question": "Which three types of VPNs are examples of enterprise-managed site-to-site VPNs? (Choose three.)",
+    "answers": [
+      "IPsec VPN",
+      "Cisco Dynamic Multipoint VPN",
+      "GRE over IPsec VPN"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Employees on 192.168.11.0/24 work on critically sensitive information and are not allowed access off their network. What is the best ACL type and placement to use in this situation?",
+    "answers": [
+      "standard ACL inbound on R1 G0/1"
+    ]
+  },
+  {
+    "question": "In an OSPF network which two statements describe the link-state database (LSDB)? (Choose two.)",
+    "answers": [
+      "It can be viewed by using the show ip ospf database command.",
+      "All routers within an area have an identical link-state database."
+    ]
+  },
+  {
+    "question": "In an OSPF network which OSPF structure is used to create the neighbor table on a router?",
+    "answers": [
+      "adjacency database"
+    ]
+  },
+  {
+    "question": "What protocol is used in a system that consists of three elements--a manager, agents, and an information database?",
+    "answers": [
+      "SNMP"
+    ]
+  },
+  {
+    "question": "What type of traffic is described as not resilient to loss?",
+    "answers": [
+      "video"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Router R1 is configured with static NAT. Addressing on the router and the web server are correctly configured, but there is no connectivity between the web server and users on the Internet. What is a possible reason for this lack of connectivity?",
+    "answers": [
+      "The router NAT configuration has an incorrect inside local address."
+    ]
+  },
+  {
+    "question": "Which type of API would be used to allow authorized salespeople of an organization access to internal sales data from their mobile devices?",
+    "answers": [
+      "private"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Which data format is used to represent the data for network automation applications?",
+    "answers": [
+      "XML"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:",
+    "answers": [
+      "denied"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. If no router ID was manually configured, what would router R1 use as its OSPF router ID?",
+    "answers": [
+      "192.168.1.100"
+    ]
+  },
+  {
+    "question": "What protocol is a vendor-neutral Layer 2 protocol that advertises the identity and capabilities of the host device to other connected network devices?",
+    "answers": [
+      "LLDP"
+    ]
+  },
+  {
+    "question": "Which type of VPN uses a hub-and-spoke configuration to establish a full mesh topology?",
+    "answers": [
+      "dynamic multipoint VPN"
+    ]
+  },
+  {
+    "question": "What is a characteristic of the REST API?",
+    "answers": [
+      "most widely used API for web services"
+    ]
+  },
+  {
+    "question": "A student, doing a summer semester of study overseas, has taken hundreds of pictures on a smartphone and wants to back them up in case of loss. What service or technology would support this requirement?",
+    "answers": [
+      "cloud services"
+    ]
+  },
+  {
+    "question": "Consider the following access list that allows IP phone configuration file transfers from a particular host to a TFTP server:",
+    "manual": true,
+    "answers": [],
+    "missingAnswers": true
+  },
+  {
+    "question": "Which three statements are generally considered to be best practices in the placement of ACLs? (Choose three.)",
+    "answers": [
+      "Filter unwanted traffic before it travels onto a low-bandwidth link.",
+      "Place standard ACLs close to the destination IP address of the traffic.",
+      "Place extended ACLs close to the source IP address of the traffic."
+    ]
+  },
+  {
+    "question": "Match the term to the web link http://www.buycarsfromus.com/2020models/ford/suv.html#Escape component. (Not all options are used.)",
+    "manual": true,
+    "answers": [],
+    "imageUrl": "https://itexamanswers.net/wp-content/uploads/2020/01/2020-07-11_172522.jpg"
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to display all static translations that have been configured?",
+    "answers": [
+      "show ip nat translations"
+    ]
+  },
+  {
+    "question": "A network administrator modified an OSPF-enabled router to have a hello timer setting of 20 seconds. What is the new dead interval time setting by default?",
+    "answers": [
+      "80 seconds"
+    ]
+  },
+  {
+    "question": "Which type of VPN is the preferred choice for support and ease of deployment for remote access?",
+    "answers": [
+      "SSL VPN"
+    ]
+  },
+  {
+    "question": "What type of traffic is described as predictable and smooth?",
+    "answers": [
+      "voice"
+    ]
+  },
+  {
+    "question": "Which queuing mechanism has no provision for prioritizing or buffering but simply forwards packets in the order they arrive?",
+    "answers": [
+      "FIFO"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator has configured OSPFv2 on the two Cisco routers. The routers are unable to form a neighbor adjacency. What should be done to fix the problem on router R2?",
+    "answers": [
+      "Implement the command no passive-interface Serial0/1."
+    ]
+  },
+  {
+    "question": "A network administrator is troubleshooting an OSPF problem that involves neighbor adjacency. What should the administrator do?",
+    "answers": [
+      "Make sure that the hello and dead interval timers are the same on all routers."
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Internet privileges for an employee have been revoked because of abuse but the employee still needs access to company resources. What is the best ACL type and placement to use in this situation?",
+    "answers": [
+      "standard ACL outbound on R2 WAN interface towards the internet"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:",
+    "answers": [
+      "permitted"
+    ]
+  },
+  {
+    "question": "A company has contracted with a network security firm to help identify the vulnerabilities of the corporate network. The firm sends a team to perform penetration tests to the company network. Why would the team use applications such as Nmap, SuperScan, and Angry IP Scanner?",
+    "answers": [
+      "to probe network devices, servers, and hosts for open TCP or UDP ports"
+    ]
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to display any dynamic PAT translations that have been created by traffic?",
+    "answers": [
+      "show ip nat translations"
+    ]
+  },
+  {
+    "question": "An administrator is configuring single-area OSPF on a router. One of the networks that must be advertised is 172.16.91.0 255.255.255.192. What wildcard mask would the administrator use in the OSPF network statement?",
+    "answers": [
+      "0.0.0.63"
+    ]
+  },
+  {
+    "question": "What type of traffic is described as requiring latency to be no more than 400 milliseconds (ms)?",
+    "answers": [
+      "video"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Which two configurations would be used to create and apply a standard access list on R1, so that only the 10.0.70.0/25 network devices are allowed to access the internal database server? (Choose two.)",
+    "manual": true,
+    "answers": [],
+    "imageUrl": "https://itexamanswers.net/wp-content/uploads/2020/06/ccna-5.0-s2-43.jpg"
+  },
+  {
+    "question": "A network administrator is writing a standard ACL that will deny any traffic from the 172.16.0.0/16 network, but permit all other traffic. Which two commands should be used? (Choose two.)",
+    "answers": [
+      "Router(config)# access-list 95 permit any",
+      "Router(config)# access-list 95 deny 172.16.0.0 0.0.255.255"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. The company has decided that no traffic initiating from any other existing or future network can be transmitted to the Research and Development network. Furthermore, no traffic that originates from the Research and Development network can be transmitted to any other existing or future networks in the company. The network administrator has decided that extended ACLs are better suited for these requirements. Based on the information given, what will the network administrator do?",
+    "answers": [
+      "Two ACLs (one in each direction) will be placed on the R2 Gi0/0 interface."
+    ]
+  },
+  {
+    "question": "What protocol uses smaller stratum numbers to indicate that the server is closer to the authorized time source than larger stratum numbers?",
+    "answers": [
+      "NTP"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. If no router ID was manually configured, what would router Branch1 use as its OSPF router ID?",
+    "answers": [
+      "192.168.1.100"
+    ]
+  },
+  {
+    "question": "Match the HTTP method with the RESTful operation.",
+    "answers": [
+      "POST -> create",
+      "GET -> read",
+      "PUT/PATCH -> update",
+      "DELETE -> delete"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A web designer calls to report that the web server web-s1.cisco.com is not reachable through a web browser. The technician uses command line utilities to verify the problem and to begin the troubleshooting process. Which two things can be determined about the problem? (Choose two.)",
+    "answers": [
+      "The web server at 192.168.0.10 is reachable from the source host.",
+      "DNS cannot resolve the IP address for the server web-s1.cisco.com."
+    ]
+  },
+  {
+    "question": "What type of traffic is described as tending to be unpredictable, inconsistent, and bursty?",
+    "answers": [
+      "video"
+    ]
+  },
+  {
+    "question": "Match the functions to the corresponding layers. (Not all options are used.)",
+    "manual": true,
+    "answers": [],
+    "imageUrl": "https://itexamanswers.net/wp-content/uploads/2020/01/2020-07-11_174231.jpg"
+  },
+  {
+    "question": "What type of traffic is described as consisting of traffic that requires a higher priority if interactive?",
+    "answers": [
+      "data"
+    ]
+  },
+  {
+    "question": "Which type of VPN provides a flexible option to connect a central site with branch sites?",
+    "answers": [
+      "dynamic multipoint VPN"
+    ]
+  },
+  {
+    "question": "A company has contracted with a network security firm to help identify the vulnerabilities of the corporate network. The firm sends a team to perform penetration tests to the company network. Why would the team use fuzzers?",
+    "answers": [
+      "to discover security vulnerabilities of a computer"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator has configured a standard ACL to permit only the two LAN networks attached to R1 to access the network that connects to R2 G0/1 interface, but not the G0/0 interface. When following the best practices, in what location should the standard ACL be applied?",
+    "answers": [
+      "R2 G0/0 outbound"
+    ]
+  },
+  {
+    "question": "Two OSPF-enabled routers are connected over a point-to-point link. During the ExStart state, which router will be chosen as the first one to send DBD packets?",
+    "answers": [
+      "the router with the highest router ID"
+    ]
+  },
+  {
+    "question": "Which step in the link-state routing process is described by a router sending Hello packets out all of the OSPF-enabled interfaces?",
+    "answers": [
+      "establishing neighbor adjacencies"
+    ]
+  },
+  {
+    "question": "A company has contracted with a network security firm to help identify the vulnerabilities of the corporate network. The firm sends a team to perform penetration tests to the company network. Why would the team use forensic tools?",
+    "answers": [
+      "to detect any evidence of a hack or malware in a computer or network"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator has configured OSPFv2 on the two Cisco routers but PC1 is unable to connect to PC2. What is the most likely problem?",
+    "answers": [
+      "Interface Fa0/0 has not been activated for OSPFv2 on router R2."
+    ]
+  },
+  {
+    "question": "ABCTech is investigating the use of automation for some of its products. In order to control and test these products, the programmers require Windows, Linux, and MAC OS on their computers. What service or technology would support this requirement?",
+    "answers": [
+      "virtualization"
+    ]
+  },
+  {
+    "question": "A network engineer has noted that some expected network route entries are not displayed in the routing table. Which two commands will provide additional information about the state of router adjacencies, timer intervals, and the area ID? (Choose two.)",
+    "answers": [
+      "show ip ospf neighbor",
+      "show ip ospf interface"
+    ]
+  },
+  {
+    "question": "Which type of VPN involves the forwarding of traffic over the backbone through the use of labels distributed among core routers?",
+    "answers": [
+      "MPLS VPN"
+    ]
+  },
+  {
+    "question": "Which type of VPN involves a nonsecure tunneling protocol being encapsulated by IPsec?",
+    "answers": [
+      "GRE over IPsec"
+    ]
+  },
+  {
+    "question": "A company has contracted with a network security firm to help identify the vulnerabilities of the corporate network. The firm sends a team to perform penetration tests to the company network. Why would the team use hacking operation systems?",
+    "answers": [
+      "to obtain specially designed operating systems preloaded with tools optimized for hacking"
+    ]
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to identify an interface as part of the external global network?",
+    "answers": [
+      "ip nat outside"
+    ]
+  },
+  {
+    "question": "To avoid purchasing new hardware, a company wants to take advantage of idle system resources and consolidate the number of servers while allowing for multiple operating systems on a single hardware platform. What service or technology would support this requirement?",
+    "answers": [
+      "virtualization"
+    ]
+  },
+  {
+    "question": "Which type of VPN routes packets through virtual tunnel interfaces for encryption and forwarding?",
+    "answers": [
+      "IPsec virtual tunnel interface"
+    ]
+  },
+  {
+    "question": "Which step in the link-state routing process is described by a router flooding link-state and cost information about each directly connected link?",
+    "answers": [
+      "exchanging link-state advertisements"
+    ]
+  },
+  {
+    "question": "What type of traffic is described as using either TCP or UDP depending on the need for error recovery?",
+    "answers": [
+      "data"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. The company CEO demands that one ACL be created to permit email traffic to the internet and deny FTP access. What is the best ACL type and placement to use in this situation?",
+    "answers": [
+      "extended ACL outbound on R2 WAN interface towards the internet"
+    ]
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to define a pool of addresses for translation?",
+    "answers": [
+      "ip nat pool POOL-STAT 64.100.14.17 64.100.14.30 netmask 255.255.255.240"
+    ]
+  },
+  {
+    "question": "What is the name of the layer in the Cisco borderless switched network design that is considered to be the backbone used for high-speed connectivity and fault isolation?",
+    "answers": [
+      "core"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on router interface. The ACL consists of a single entry:",
+    "answers": [
+      "permitted"
+    ]
+  },
+  {
+    "question": "What type of traffic is described as consisting of traffic that gets a lower priority if it is not mission-critical?",
+    "answers": [
+      "data"
+    ]
+  },
+  {
+    "question": "Which OSPF table is identical on all converged routers within the same OSPF area?",
+    "answers": [
+      "topology"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:\naccess-list 100 permit tcp 192.168.10.0 0.0.0.255 any eq www .",
+    "answers": [
+      "permitted"
+    ]
+  },
+  {
+    "question": "What protocol allows the manager to poll agents to access information from the agent MIB?",
+    "answers": [
+      "SNMP"
+    ]
+  },
+  {
+    "question": "Match each component of a WAN connection to its description. (Not all options are used.)",
+    "manual": true,
+    "answers": [],
+    "imageUrl": "https://itexamanswers.net/wp-content/uploads/2020/08/Match-each-component-of-a-WAN-connection-to-its-description.jpg"
+  },
+  {
+    "question": "What type of traffic is described as being able to tolerate a certain amount of latency, jitter, and loss without any noticeable effects?",
+    "answers": [
+      "voice"
+    ]
+  },
+  {
+    "question": "What term describes adding a value to the packet header, as close to the source as possible, so that the packet matches a defined policy?",
+    "answers": [
+      "traffic marking"
+    ]
+  },
+  {
+    "question": "Which three traffic-related factors would influence selecting a particular WAN link type? (Choose three.)",
+    "answers": [
+      "amount of traffic",
+      "security needs",
+      "type of traffic"
+    ]
+  },
+  {
+    "question": "What command would be used as part of configuring NAT or PAT to link the inside local addresses to the pool of addresses available for PAT translation?",
+    "answers": [
+      "ip nat inside source list 14 pool POOL-STAT overload"
+    ]
+  },
+  {
+    "question": "What protocol is a vendor-neutral Layer 2 discovery protocol that must be configured separately to transmit and receive information packets?",
+    "answers": [
+      "LLDP"
+    ]
+  },
+  {
+    "question": "An ACL is applied inbound on a router interface. The ACL consists of a single entry:",
+    "answers": [
+      "denied"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. Corporate policy demands that access to the server network be restricted to internal employees only. What is the best ACL type and placement to use in this situation?",
+    "answers": [
+      "extended ACL outbound on R2 S0/0/1"
+    ]
+  },
+  {
+    "question": "A technician is working on a Layer 2 switch and notices that a %CDP-4-DUPLEX_MISMATCH message keeps appearing for port G0/5. What command should the technician issue on the switch to start the troubleshooting process?",
+    "answers": [
+      "show interface g0/5"
+    ]
+  },
+  {
+    "question": "Which virtual resource would be installed on a network server to provide direct access to hardware resources?",
+    "answers": [
+      "a Type 1 hypervisor"
+    ]
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator has configured a standard ACL to permit only the two LAN networks attached to R1 to access the network that connects to R2 G0/1 interface. When following the best practices, in what location should the standard ACL be applied?",
+    "answers": [
+      "R2 G0/1 outbound"
+    ]
+  },
+  {
+    "question": "Which OSPF database is identical on all converged routers within the same OSPF area?",
+    "answers": [
+      "link-state"
+    ]
+  },
+  {
+    "question": "What are two features to consider when creating a named ACL? (Choose two.)",
+    "answers": [
+      "Use alphanumeric characters if needed.",
+      "Be descriptive when creating the ACL name."
+    ]
+  },
+  {
+    "question": "Match the RESTful API method to CRUD function.",
+    "manual": true,
+    "answers": [],
+    "imageUrl": "https://itexamanswers.net/wp-content/uploads/2020/01/2020-10-25_185415.jpg"
+  },
+  {
+    "question": "What type of traffic is described as requiring at least 384 Kbps of bandwidth?",
+    "answers": [
+      "video"
+    ]
+  },
+  {
+    "question": "Which step in the link-state routing process is described by a router inserting best paths into the routing table?",
+    "answers": [
+      "choosing the best route"
+    ]
+  },
+  {
+    "question": "Anycompany has decided to reduce its environmental footprint by reducing energy costs, moving to a smaller facility, and promoting telecommuting. What service or technology would support this requirement?",
+    "answers": [
+      "cloud services"
+    ]
+  },
+  {
+    "question": "A network technician is configuring SNMPv3 and has set a security level of SNMPv3 authPriv. What is a feature of using this level?",
+    "answers": [
+      "authenticates a packet by using either the HMAC MD5 or HMAC SHA algorithms and a username"
+    ]
+  }
+]
