@@ -9,10 +9,13 @@
         "scrape:exam": "node scraper/exam-scrape.js",
         "scrape:quiz": "node scraper/quiz-scrape.js",
         "scrape:practice": "node scraper/practice-scrape.js",
+        "scrape:infraexam": "node scraper/infraexam-scrape.js",
         "probe": "node tools/browser-probe.js",
         "build:runner": "node scripts/build-runner.js",
         "build:extension": "node scripts/build-extension.js",
-        "build": "npm run build:runner && npm run build:extension"
+        "build": "npm run build:runner && npm run build:extension",
+        "sync:python1": "node tools/sync-python1-questions.js",
+        "sync:python2": "node tools/sync-python2-questions.js"
     },
     "dependencies": {
         "puppeteer-core": "^24.32.1"

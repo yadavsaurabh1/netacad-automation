@@ -51,6 +51,15 @@
     }
     return q;
   }
+  function normalizeCodeForKey(code) {
+    if (!code) return "";
+    return String(code).replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/[\u2000-\u200F\u2028-\u202F]/g, "").replace(/\u00A0/g, " ").replace(/\r?\n+/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function questionLookupKeyWithCode(question, answers, code) {
+    const base = questionLookupKey(question, answers);
+    const c = normalizeCodeForKey(code);
+    return c ? `${base}::code::${c}` : base;
+  }
   function extractNumbers(str) {
     return (str.match(/\d+/g) || []).join(",");
   }
@@ -386,15 +395,24 @@
   function isModuleQuiz(doc) {
     const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
     for (const span of spans) {
-      if (/module\s+(practice\s+and\s+)?quiz/i.test((span.textContent || "").trim())) return true;
+      const t = (span.textContent || "").trim();
+      if (/module\s+(practice\s+and\s+)?quiz/i.test(t)) return true;
+      if (/module\s+\d+\s+exam/i.test(t)) return true;
+      if (/module\s+exam/i.test(t)) return true;
     }
     if (!doc) return false;
     const hints = deepQuerySelectorAll(".module-title, .page__title-inner, h1, h2", doc);
-    return hints.some((el) => /module\s+quiz/i.test((el.textContent || "").trim()));
+    return hints.some((el) => /module\s+(quiz|exam)/i.test((el.textContent || "").trim()));
   }
   function isProseCommaAnswer(parts) {
     if (parts.length !== 2) return false;
     return /^if (the |an |a )/.test(parts[0]) && /^the (system|switch|device|router|network|led|host)/i.test(parts[1]);
+  }
+  function isBracketedLiteral(text) {
+    const t = String(text ?? "").trim();
+    if (t.startsWith("[") && t.endsWith("]")) return true;
+    if (t.startsWith("(") && t.endsWith(")")) return true;
+    return false;
   }
   function expandAnswerList(answers, question) {
     const expanded = [];
@@ -402,7 +420,7 @@
     const isOrderQuestion = /\b(correct order|in order|proper order|sequence)\b/i.test(qNorm);
     for (const raw of answers || []) {
       const n = normalizeText(raw);
-      if (!n.includes(",")) {
+      if (!n.includes(",") || isBracketedLiteral(raw)) {
         expanded.push(n);
         continue;
       }
@@ -426,7 +444,7 @@
   function compileCyuDb(rawDb, targetMap) {
     for (const section in rawDb) {
       rawDb[section].forEach((item) => {
-        const key = questionLookupKey(item.question, item.answers);
+        const key = questionLookupKeyWithCode(item.question, item.answers, item.code);
         targetMap.set(key, expandAnswerList(item.answers, item.question));
       });
     }
@@ -448,7 +466,7 @@
     }
     for (const item of items) {
       if (!isAssessmentQuestionItem(item)) continue;
-      const key = questionLookupKey(item.question, item.answers);
+      const key = questionLookupKeyWithCode(item.question, item.answers, item.code);
       targetMap.set(key, {
         answers: expandAnswerList(item.answers, item.question),
         manual: !!item.manual,
@@ -502,24 +520,29 @@
     return mode === "checkpoint" || mode === "practice" || mode === "final";
   }
   function findBestQuestionMatch(map, qText, isCheckpoint) {
-    const qLookup = stripPtActivityBoilerplate(qText) || qText;
+    const qLookupNoCode = stripPtActivityBoilerplate(qText) || qText;
     const pageHasSubstantive = !isGenericPtQuestion(qText);
-    if (map.get(qLookup)) {
-      const val = map.get(qLookup);
-      return { entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null }, score: 1, key: qLookup };
-    }
     if (map.get(qText)) {
       const val = map.get(qText);
       return { entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null }, score: 1, key: qText };
     }
-    const prefixHit = findEntryByQuestionPrefix(map, qLookup, isCheckpoint);
+    if (map.get(qLookupNoCode)) {
+      const val = map.get(qLookupNoCode);
+      return {
+        entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null },
+        score: 1,
+        key: qLookupNoCode
+      };
+    }
+    const prefixHit = findEntryByQuestionPrefix(map, qLookupNoCode, isCheckpoint);
     if (prefixHit) return prefixHit;
-    const qCore = stripChooseClause(qLookup);
+    const qCore = stripChooseClause(qLookupNoCode);
     let bestKey = null;
     let bestScore = 0;
     for (const [key, val] of map) {
       if (pageHasSubstantive && isGenericPtQuestion(key)) continue;
-      const keyLookup = stripPtActivityBoilerplate(key) || key;
+      const keyNoCode = key.split("::code::")[0];
+      const keyLookup = stripPtActivityBoilerplate(keyNoCode) || keyNoCode;
       if (stripChooseClause(keyLookup) === qCore) {
         return {
           entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null },
@@ -527,7 +550,7 @@
           key
         };
       }
-      const score = textSimilarity(keyLookup, qLookup);
+      const score = textSimilarity(keyLookup, qLookupNoCode);
       if (score > bestScore) {
         bestScore = score;
         bestKey = key;
@@ -544,19 +567,28 @@
     }
     return { entry: null, score: bestScore, key: bestKey };
   }
-  function lookupEntry(databases, activeDb, qText) {
+  function lookupEntry(databases, activeDb, qText, qCode) {
     if (!activeDb.ready) return null;
     const isCheckpoint = isAssessmentEntryMode(activeDb.mode);
-    let result = findBestQuestionMatch(activeDb.map, qText, isCheckpoint);
+    const qKeyWithCode = questionLookupKeyWithCode(qText, null, qCode);
+    const qKeyNoCode = questionLookupKey(qText, null);
+    let result = findBestQuestionMatch(activeDb.map, qKeyWithCode, isCheckpoint);
+    if (!result.entry) result = findBestQuestionMatch(activeDb.map, qKeyNoCode, isCheckpoint);
     if (!result.entry && activeDb.mode === "cyu" && typeof QUIZ_DB !== "undefined") {
-      result = findBestQuestionMatch(databases.quizMap, qText, false);
+      result = findBestQuestionMatch(databases.quizMap, qKeyWithCode, false);
+      if (!result.entry) result = findBestQuestionMatch(databases.quizMap, qKeyNoCode, false);
     }
     if (!result.entry && activeDb.mode === "quiz") {
-      result = findBestQuestionMatch(databases.cyuDb, qText, false);
+      result = findBestQuestionMatch(databases.cyuDb, qKeyWithCode, false);
+      if (!result.entry) result = findBestQuestionMatch(databases.cyuDb, qKeyNoCode, false);
     }
     if (!result.entry && activeDb.mode === "cyu" && typeof CHECKPOINT_DB !== "undefined") {
-      const cp = findBestQuestionMatch(databases.checkpointMap, qText, true);
+      const cp = findBestQuestionMatch(databases.checkpointMap, qKeyWithCode, true);
       if (cp.entry) result = cp;
+      else {
+        const cp2 = findBestQuestionMatch(databases.checkpointMap, qKeyNoCode, true);
+        if (cp2.entry) result = cp2;
+      }
     }
     if (result.entry) {
       result.entry._matchKey = result.key;
@@ -627,8 +659,9 @@
       if (mode === "quiz") return "QUIZ_DB";
       return "RAW_DB";
     }
-    function lookupEntryCached(activeDb, qText) {
-      const k = `${activeDb.mode}::${normalizeText(qText)}`;
+    function lookupEntryCached(activeDb, qText, qCode) {
+      const codeKey = normalizeCodeForKey(qCode);
+      const k = `${activeDb.mode}::${normalizeText(qText)}::${codeKey}`;
       if (entryLookupCache.has(k)) {
         const hit = entryLookupCache.get(k);
         return hit === LOOKUP_MISS ? null : hit;
@@ -636,7 +669,8 @@
       const entry = lookupEntry(
         { cyuDb, quizMap, checkpointMap, practiceMap, finalExamMap },
         activeDb,
-        qText
+        qText,
+        qCode
       );
       entryLookupCache.set(k, entry || LOOKUP_MISS);
       return entry;
@@ -663,11 +697,80 @@
     }
     return null;
   }
+  function isCheckPending(checkView) {
+    const solution = deepQuerySelectorAll(".check__solution", checkView)[0];
+    if (!solution) return true;
+    return solution.classList.contains("check__hidden");
+  }
+  function tryClickVisibleCheck(doc, scope = doc, opts = {}) {
+    const minVis = opts.minVis ?? 0.15;
+    const visFn = opts.elementVisibilityRatio;
+    if (!visFn) return false;
+    let bestBtn = null;
+    let bestVis = 0;
+    for (const btn of deepQuerySelectorAll("button.check__button", scope)) {
+      if (btn.disabled || btn.classList.contains("is-disabled") || btn.hasAttribute("disabled")) {
+        continue;
+      }
+      const checkView = btn.closest("check-view") || deepQuerySelectorAll("check-view", scope).find(
+        (cv) => deepQuerySelectorAll("button.check__button", cv)[0] === btn
+      );
+      if (checkView && !isCheckPending(checkView)) continue;
+      const vis = visFn(btn);
+      if (vis < minVis || vis <= bestVis) continue;
+      bestVis = vis;
+      bestBtn = btn;
+    }
+    if (!bestBtn) return false;
+    bestBtn.click();
+    return true;
+  }
   function getQuestionBodyEl(qContainer) {
     return deepQuerySelectorAll(
       ".mcq__body-inner, .matching__body-inner, .objectMatching__body-inner, .js-question-text",
       qContainer
     )[0];
+  }
+  function decodeHtmlEntities(str) {
+    const ta = document.createElement("textarea");
+    ta.innerHTML = String(str ?? "");
+    return ta.value;
+  }
+  function normalizeCodeDomText(str) {
+    return String(str ?? "").replace(/\u00A0/g, " ").replace(/\r?\n+/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n[ \t]+/g, "\n").trim();
+  }
+  function extractQuestionCodeText(qContainer) {
+    if (!qContainer) return "";
+    const slideRoot = qContainer.closest(".js-abs-block-container, .abs__container, .assessment-1q") || qContainer;
+    const cw = deepQuerySelectorAll(
+      [
+        "code-window-webcomponent-mcq[precode]",
+        "code-window-webcomponent-mcq",
+        "code-window-webcomponent[precode]",
+        "code-window-webcomponent"
+      ].join(", "),
+      slideRoot
+    )[0] || null;
+    let code = "";
+    if (cw) {
+      const precodeAttr = cw.getAttribute("precode");
+      if (precodeAttr) {
+        try {
+          const decoded = decodeHtmlEntities(precodeAttr);
+          const arr = JSON.parse(decoded);
+          const lines = (arr || []).map((o) => o && typeof o.text === "string" ? o.text : "").map((t) => decodeHtmlEntities(t));
+          code = lines.join("\n");
+        } catch {
+        }
+      }
+      if (!code) {
+        const commands = deepQuerySelectorAll(".code-container .command, .command", slideRoot);
+        if (commands.length) {
+          code = commands.map((n) => (n.innerText || n.textContent || "").trim()).filter(Boolean).join("\n");
+        }
+      }
+    }
+    return normalizeCodeDomText(code);
   }
   function isMatchingQuestionContainer(qContainer) {
     const tag = (qContainer.tagName || "").toLowerCase();
@@ -891,8 +994,24 @@
       (sBtn) => !sBtn.disabled && !sBtn.classList.contains("is-disabled") && !sBtn.hasAttribute("disabled")
     );
   }
-  function trySubmitAndAdvance(doc, qContainer = null) {
+  function trySubmitAndAdvance(doc, qContainer = null, opts = {}) {
     const answered = !qContainer || isQuestionAnswered(qContainer);
+    const scope = qContainer?.closest?.(".js-abs-block-container, .abs__container, .assessment-1q") || qContainer || doc;
+    if (answered && opts.elementVisibilityRatio) {
+      if (tryClickVisibleCheck(doc, scope, {
+        elementVisibilityRatio: opts.elementVisibilityRatio
+      })) {
+        return true;
+      }
+    } else if (answered) {
+      const checkBtn = deepQuerySelectorAll("button.check__button", scope).find(
+        (b) => !b.disabled && !b.classList.contains("is-disabled") && !b.hasAttribute("disabled")
+      );
+      if (checkBtn) {
+        checkBtn.click();
+        return true;
+      }
+    }
     const submitBtns = deepQuerySelectorAll(".submit-button", doc);
     for (const sBtn of submitBtns) {
       if (!sBtn.disabled && !sBtn.classList.contains("is-disabled") && !sBtn.hasAttribute("disabled")) {
@@ -1208,7 +1327,17 @@
     }
     function getInAssessmentStartButtons(root = doc) {
       return deepQuerySelectorAll(
-        'adaptive-start-screen-view .start-button, .assessment-start-screen .start-button, adaptive-start-screen-view div.start-button[role="button"]',
+        [
+          "adaptive-start-screen-view .start-button",
+          ".assessment-start-screen .start-button",
+          'adaptive-start-screen-view div.start-button[role="button"]',
+          "adaptive-start-screen-view button.start-button",
+          ".assessment-start-screen button.start-button",
+          "button.start-button",
+          '[role="button"].start-button',
+          'button[aria-label*="Start" i]',
+          'button[title*="Start" i]'
+        ].join(", "),
         root
       );
     }
@@ -1573,6 +1702,70 @@
     lastText = "";
     lastAt = 0;
   }
+  function findCodewindowBefore(checkView, doc) {
+    let last = null;
+    for (const cw of deepQuerySelectorAll("codewindow-view", doc)) {
+      if (checkView.compareDocumentPosition(cw) & Node.DOCUMENT_POSITION_PRECEDING) {
+        last = cw;
+      }
+    }
+    return last;
+  }
+  function extractPythonQuestionText(codewindowRoot) {
+    const el = deepQuerySelectorAll(".before-body-text", codewindowRoot)[0];
+    if (!el) return "";
+    const raw = (el.innerText || el.textContent || "").replace(/\u00A0/g, " ");
+    return normalizeText(raw.replace(/^question\s*\d+\s*:\s*/i, ""));
+  }
+  function findVisiblePythonCheckExercise(doc, elementVisibilityRatio, minVis = 0.15) {
+    let best = null;
+    let bestVis = 0;
+    for (const checkView of deepQuerySelectorAll("check-view", doc)) {
+      const btn = deepQuerySelectorAll("button.check__button", checkView)[0];
+      if (!btn || btn.disabled || btn.classList.contains("is-disabled") || btn.hasAttribute("disabled")) {
+        continue;
+      }
+      if (!isCheckPending(checkView)) continue;
+      const vis = elementVisibilityRatio(btn);
+      if (vis < minVis || vis <= bestVis) continue;
+      const codewindow = findCodewindowBefore(checkView, doc);
+      if (!codewindow) continue;
+      bestVis = vis;
+      best = {
+        checkView,
+        button: btn,
+        codewindow,
+        questionText: extractPythonQuestionText(codewindow),
+        code: extractQuestionCodeText(codewindow)
+      };
+    }
+    return best;
+  }
+  function tryHandlePythonExercise(doc, databases, assessment) {
+    const ctx = findVisiblePythonCheckExercise(doc, assessment.elementVisibilityRatio);
+    if (!ctx) return false;
+    const unansweredMcq = deepQuerySelectorAll("mcq-view", doc).some((v) => {
+      const body = getQuestionBodyEl(v);
+      return body && assessment.elementVisibilityRatio(body) >= 0.15 && !isQuestionAnswered(v);
+    });
+    if (unansweredMcq) return false;
+    const activeDb = databases.getActiveDb(doc);
+    const mcqViews = deepQuerySelectorAll("mcq-view", doc).filter((v) => {
+      const body = getQuestionBodyEl(v);
+      return body && assessment.elementVisibilityRatio(body) >= 0.15;
+    });
+    if (mcqViews.length && activeDb.ready) {
+      const mcq = mcqViews.sort(
+        (a, b) => assessment.elementVisibilityRatio(getQuestionBodyEl(b)) - assessment.elementVisibilityRatio(getQuestionBodyEl(a))
+      )[0];
+      const entry = databases.lookupEntryCached(activeDb, ctx.questionText, ctx.code);
+      if (entry && !shouldTreatAsManual(entry, mcq)) {
+        solveQuestion(mcq, entry, ctx.questionText, doc, false);
+      }
+    }
+    ctx.button.click();
+    return true;
+  }
   function createMainLoop(doc, win, databases) {
     const assessment = createAssessmentHelpers(doc, win);
     const content = createContentHelpers(doc, win, assessment);
@@ -1647,6 +1840,14 @@
       loopTicks++;
       const assessmentRoot = assessment.getVisibleAssessmentRoot(0.15);
       const assessmentDone = assessment.isAssessmentResultVisible(doc) || assessmentRoot && assessment.isAssessmentComplete(assessmentRoot);
+      const submitOpts = { elementVisibilityRatio: assessment.elementVisibilityRatio };
+      if (!assessmentDone && tryHandlePythonExercise(doc, databases, assessment)) {
+        setStatus("Check");
+        bumpCooldown(400);
+        invalidateShadowCache();
+        scheduleNextTick(getTickDelay());
+        return;
+      }
       if (assessmentDone) {
         setStatus("Done");
         if (assessmentRoot) {
@@ -1686,8 +1887,18 @@
           scheduleNextTick(getTickDelay());
           return;
         }
-        const finalSubmitBtn = deepQuerySelectorAll(".adaptive-assessment-submit", screen)[0];
-        if (finalSubmitBtn && !finalSubmitBtn.classList.contains("is-disabled") && !finalSubmitBtn.disabled) {
+        const submitCandidates = [
+          ...deepQuerySelectorAll(".adaptive-assessment-submit", screen),
+          ...deepQuerySelectorAll(".submit-button", screen),
+          ...deepQuerySelectorAll('button[type="submit"]', screen),
+          ...deepQuerySelectorAll("button", screen).filter(
+            (b) => /\b(final\s+submit|submit\s+exam|submit)\b/i.test((b.textContent || "").trim())
+          )
+        ];
+        const finalSubmitBtn = submitCandidates.find(
+          (btn) => btn && !btn.disabled && !btn.classList.contains("is-disabled") && !btn.hasAttribute("disabled")
+        );
+        if (finalSubmitBtn) {
           finalSubmitBtn.click();
           setStatus("Submit");
           bumpCooldown(800);
@@ -1727,6 +1938,7 @@
             return;
           }
           const qText = extractCleanText(qTextEl);
+          const qCode = extractQuestionCodeText(qContainer);
           const tag = databases.getDbTag(activeDb.mode);
           if (!activeDb.ready) {
             if (!qContainer.dataset.warned) {
@@ -1737,7 +1949,7 @@
             scheduleAssessmentPoll();
             return;
           }
-          const entry = databases.lookupEntryCached(activeDb, qText);
+          const entry = databases.lookupEntryCached(activeDb, qText, qCode);
           if (!entry) {
             if (!qContainer.dataset.warned) {
               qContainer.dataset.warned = "true";
@@ -1748,7 +1960,7 @@
               return;
             }
             delete qContainer.dataset.warned;
-            if (trySubmitAndAdvance(doc, qContainer)) {
+            if (trySubmitAndAdvance(doc, qContainer, submitOpts)) {
               setStatus("Submit");
               bumpCooldown();
               invalidateShadowCache();
@@ -1762,7 +1974,7 @@
               scheduleAssessmentPoll();
               return;
             }
-            if (trySubmitAndAdvance(doc, qContainer)) bumpCooldown();
+            if (trySubmitAndAdvance(doc, qContainer, submitOpts)) bumpCooldown();
             scheduleAssessmentPoll();
             return;
           }
@@ -1779,7 +1991,8 @@
             bumpCooldown();
           }
           if (acted) {
-            if (isSecureExam() && isQuestionAnswered(qContainer) && trySubmitAndAdvance(doc, qContainer)) {
+            if (isQuestionAnswered(qContainer) && trySubmitAndAdvance(doc, qContainer, submitOpts)) {
+              setStatus("Check");
               bumpCooldown();
               invalidateShadowCache();
             }
@@ -1790,7 +2003,7 @@
             scheduleAssessmentPoll();
             return;
           }
-          if (trySubmitAndAdvance(doc, qContainer)) {
+          if (trySubmitAndAdvance(doc, qContainer, submitOpts)) {
             bumpCooldown();
             invalidateShadowCache();
             scheduleAssessmentPoll();

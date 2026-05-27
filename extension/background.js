@@ -20,6 +20,8 @@ const COURSE_FILES = {
     ccna1: 'data/variables_ccna1.js',
     ccna2: 'data/variables_ccna2.js',
     ccna3: 'data/variables_ccna3.js',
+    python1: 'data/variables_python1.js',
+    python2: 'data/variables_python2.js',
 };
 
 const NETACAD_RE = /^https:\/\/([a-z0-9-]+\.)*netacad\.com\//i;

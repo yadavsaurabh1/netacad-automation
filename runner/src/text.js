@@ -76,6 +76,23 @@ export function questionLookupKey(question, answers) {
     return q;
 }
 
+export function normalizeCodeForKey(code) {
+    if (!code) return '';
+    return String(code)
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/[\u2000-\u200F\u2028-\u202F]/g, '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\r?\n+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+export function questionLookupKeyWithCode(question, answers, code) {
+    const base = questionLookupKey(question, answers);
+    const c = normalizeCodeForKey(code);
+    return c ? `${base}::code::${c}` : base;
+}
+
 export function extractNumbers(str) {
     return (str.match(/\d+/g) || []).join(',');
 }

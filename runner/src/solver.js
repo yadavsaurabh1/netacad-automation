@@ -17,6 +17,7 @@
 */
 
 import { deepQuerySelectorAll } from './dom.js';
+import { tryClickVisibleCheck } from './check-button.js';
 import {
     dbAnswerMatchesOption,
     expectedSelectionCount,
@@ -34,6 +35,67 @@ export function getQuestionBodyEl(qContainer) {
         '.mcq__body-inner, .matching__body-inner, .objectMatching__body-inner, .js-question-text',
         qContainer,
     )[0];
+}
+
+function decodeHtmlEntities(str) {
+    const ta = document.createElement('textarea');
+    ta.innerHTML = String(str ?? '');
+    return ta.value;
+}
+
+function normalizeCodeDomText(str) {
+    return String(str ?? '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\r?\n+/g, '\n')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n[ \t]+/g, '\n')
+        .trim();
+}
+
+export function extractQuestionCodeText(qContainer) {
+    if (!qContainer) return '';
+
+    const slideRoot =
+        qContainer.closest('.js-abs-block-container, .abs__container, .assessment-1q') || qContainer;
+
+    const cw =
+        deepQuerySelectorAll(
+            [
+                'code-window-webcomponent-mcq[precode]',
+                'code-window-webcomponent-mcq',
+                'code-window-webcomponent[precode]',
+                'code-window-webcomponent',
+            ].join(', '),
+            slideRoot,
+        )[0] || null;
+
+    let code = '';
+
+    if (cw) {
+        const precodeAttr = cw.getAttribute('precode');
+        if (precodeAttr) {
+            try {
+                const decoded = decodeHtmlEntities(precodeAttr);
+                const arr = JSON.parse(decoded);
+                const lines = (arr || [])
+                    .map(o => (o && typeof o.text === 'string' ? o.text : ''))
+                    .map(t => decodeHtmlEntities(t));
+                code = lines.join('\n');
+            } catch {}
+        }
+
+        if (!code) {
+            const commands = deepQuerySelectorAll('.code-container .command, .command', slideRoot);
+            if (commands.length) {
+                code = commands
+                    .map(n => (n.innerText || n.textContent || '').trim())
+                    .filter(Boolean)
+                    .join('\n');
+            }
+        }
+    }
+
+    return normalizeCodeDomText(code);
 }
 
 export function isMatchingQuestionContainer(qContainer) {
@@ -297,8 +359,26 @@ export function isSubmitEnabled(doc) {
     );
 }
 
-export function trySubmitAndAdvance(doc, qContainer = null) {
+export function trySubmitAndAdvance(doc, qContainer = null, opts = {}) {
     const answered = !qContainer || isQuestionAnswered(qContainer);
+    const scope = qContainer?.closest?.('.js-abs-block-container, .abs__container, .assessment-1q') ||
+        qContainer || doc;
+
+    if (answered && opts.elementVisibilityRatio) {
+        if (tryClickVisibleCheck(doc, scope, {
+            elementVisibilityRatio: opts.elementVisibilityRatio,
+        })) {
+            return true;
+        }
+    } else if (answered) {
+        const checkBtn = deepQuerySelectorAll('button.check__button', scope).find(b =>
+            !b.disabled && !b.classList.contains('is-disabled') && !b.hasAttribute('disabled'),
+        );
+        if (checkBtn) {
+            checkBtn.click();
+            return true;
+        }
+    }
 
     const submitBtns = deepQuerySelectorAll('.submit-button', doc);
     for (const sBtn of submitBtns) {

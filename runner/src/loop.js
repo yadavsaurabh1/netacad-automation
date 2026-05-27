@@ -34,8 +34,10 @@ import { invalidateShadowCache, deepQuerySelectorAll } from './dom.js';
 import { isSecureExam } from './exam-type.js';
 import { setStatus } from './status.js';
 import { extractCleanText } from './text.js';
+import { tryHandlePythonExercise } from './python-exercise.js';
 import {
     getQuestionBodyEl,
+    extractQuestionCodeText,
     isQuestionAnswered,
     isSubmitEnabled,
     shouldTreatAsManual,
@@ -134,6 +136,15 @@ export function createMainLoop(doc, win, databases) {
         const assessmentRoot = assessment.getVisibleAssessmentRoot(0.15);
         const assessmentDone = assessment.isAssessmentResultVisible(doc) ||
             (assessmentRoot && assessment.isAssessmentComplete(assessmentRoot));
+        const submitOpts = { elementVisibilityRatio: assessment.elementVisibilityRatio };
+
+        if (!assessmentDone && tryHandlePythonExercise(doc, databases, assessment)) {
+            setStatus('Check');
+            bumpCooldown(400);
+            invalidateShadowCache();
+            scheduleNextTick(getTickDelay());
+            return;
+        }
 
         if (assessmentDone) {
             setStatus('Done');
@@ -177,8 +188,20 @@ export function createMainLoop(doc, win, databases) {
                 return;
             }
 
-            const finalSubmitBtn = deepQuerySelectorAll('.adaptive-assessment-submit', screen)[0];
-            if (finalSubmitBtn && !finalSubmitBtn.classList.contains('is-disabled') && !finalSubmitBtn.disabled) {
+            const submitCandidates = [
+                ...deepQuerySelectorAll('.adaptive-assessment-submit', screen),
+                ...deepQuerySelectorAll('.submit-button', screen),
+                ...deepQuerySelectorAll('button[type="submit"]', screen),
+                ...deepQuerySelectorAll('button', screen).filter(b =>
+                    /\b(final\s+submit|submit\s+exam|submit)\b/i.test((b.textContent || '').trim()),
+                ),
+            ];
+
+            const finalSubmitBtn = submitCandidates.find(btn =>
+                btn && !btn.disabled && !btn.classList.contains('is-disabled') && !btn.hasAttribute('disabled'),
+            );
+
+            if (finalSubmitBtn) {
                 finalSubmitBtn.click();
                 setStatus('Submit');
                 bumpCooldown(800);
@@ -228,6 +251,7 @@ export function createMainLoop(doc, win, databases) {
                 }
 
                 const qText = extractCleanText(qTextEl);
+                const qCode = extractQuestionCodeText(qContainer);
                 const tag = databases.getDbTag(activeDb.mode);
 
                 if (!activeDb.ready) {
@@ -240,7 +264,7 @@ export function createMainLoop(doc, win, databases) {
                     return;
                 }
 
-                const entry = databases.lookupEntryCached(activeDb, qText);
+                const entry = databases.lookupEntryCached(activeDb, qText, qCode);
 
                 if (!entry) {
                     if (!qContainer.dataset.warned) {
@@ -252,7 +276,7 @@ export function createMainLoop(doc, win, databases) {
                         return;
                     }
                     delete qContainer.dataset.warned;
-                    if (trySubmitAndAdvance(doc, qContainer)) {
+                    if (trySubmitAndAdvance(doc, qContainer, submitOpts)) {
                         setStatus('Submit');
                         bumpCooldown();
                         invalidateShadowCache();
@@ -267,7 +291,7 @@ export function createMainLoop(doc, win, databases) {
                         scheduleAssessmentPoll();
                         return;
                     }
-                    if (trySubmitAndAdvance(doc, qContainer)) bumpCooldown();
+                    if (trySubmitAndAdvance(doc, qContainer, submitOpts)) bumpCooldown();
                     scheduleAssessmentPoll();
                     return;
                 }
@@ -287,8 +311,9 @@ export function createMainLoop(doc, win, databases) {
                 }
 
                 if (acted) {
-                    if (isSecureExam() && isQuestionAnswered(qContainer) &&
-                        trySubmitAndAdvance(doc, qContainer)) {
+                    if (isQuestionAnswered(qContainer) &&
+                        trySubmitAndAdvance(doc, qContainer, submitOpts)) {
+                        setStatus('Check');
                         bumpCooldown();
                         invalidateShadowCache();
                     }
@@ -299,7 +324,7 @@ export function createMainLoop(doc, win, databases) {
                     scheduleAssessmentPoll();
                     return;
                 }
-                if (trySubmitAndAdvance(doc, qContainer)) {
+                if (trySubmitAndAdvance(doc, qContainer, submitOpts)) {
                     bumpCooldown();
                     invalidateShadowCache();
                     scheduleAssessmentPoll();

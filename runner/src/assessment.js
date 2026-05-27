@@ -374,7 +374,17 @@ export function createAssessmentHelpers(doc, win) {
 
     function getInAssessmentStartButtons(root = doc) {
         return deepQuerySelectorAll(
-            'adaptive-start-screen-view .start-button, .assessment-start-screen .start-button, adaptive-start-screen-view div.start-button[role="button"]',
+            [
+                'adaptive-start-screen-view .start-button',
+                '.assessment-start-screen .start-button',
+                'adaptive-start-screen-view div.start-button[role="button"]',
+                'adaptive-start-screen-view button.start-button',
+                '.assessment-start-screen button.start-button',
+                'button.start-button',
+                '[role="button"].start-button',
+                'button[aria-label*="Start" i]',
+                'button[title*="Start" i]',
+            ].join(', '),
             root,
         );
     }

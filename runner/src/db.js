@@ -20,7 +20,9 @@ import {
     expandLayerAliases,
     isGenericPtQuestion,
     normalizeText,
+    normalizeCodeForKey,
     questionLookupKey,
+    questionLookupKeyWithCode,
     stripChooseClause,
     stripPtActivityBoilerplate,
     textSimilarity,
@@ -33,6 +35,13 @@ function isProseCommaAnswer(parts) {
         /^the (system|switch|device|router|network|led|host)/i.test(parts[1]);
 }
 
+function isBracketedLiteral(text) {
+    const t = String(text ?? '').trim();
+    if (t.startsWith('[') && t.endsWith(']')) return true;
+    if (t.startsWith('(') && t.endsWith(')')) return true;
+    return false;
+}
+
 function expandAnswerList(answers, question) {
     const expanded = [];
     const qNorm = normalizeText(question || '');
@@ -40,7 +49,7 @@ function expandAnswerList(answers, question) {
 
     for (const raw of answers || []) {
         const n = normalizeText(raw);
-        if (!n.includes(',')) {
+        if (!n.includes(',') || isBracketedLiteral(raw)) {
             expanded.push(n);
             continue;
         }
@@ -70,7 +79,7 @@ function isAssessmentDatasetBundle(rawDb) {
 function compileCyuDb(rawDb, targetMap) {
     for (const section in rawDb) {
         rawDb[section].forEach(item => {
-            const key = questionLookupKey(item.question, item.answers);
+            const key = questionLookupKeyWithCode(item.question, item.answers, item.code);
             targetMap.set(key, expandAnswerList(item.answers, item.question));
         });
     }
@@ -93,7 +102,7 @@ function compileAssessmentDb(rawDb, targetMap) {
     }
     for (const item of items) {
         if (!isAssessmentQuestionItem(item)) continue;
-        const key = questionLookupKey(item.question, item.answers);
+        const key = questionLookupKeyWithCode(item.question, item.answers, item.code);
         targetMap.set(key, {
             answers: expandAnswerList(item.answers, item.question),
             manual: !!item.manual,
@@ -152,29 +161,35 @@ function isAssessmentEntryMode(mode) {
 }
 
 export function findBestQuestionMatch(map, qText, isCheckpoint) {
-    const qLookup = stripPtActivityBoilerplate(qText) || qText;
+    const qLookupNoCode = stripPtActivityBoilerplate(qText) || qText;
     const pageHasSubstantive = !isGenericPtQuestion(qText);
 
-    if (map.get(qLookup)) {
-        const val = map.get(qLookup);
-        return { entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null }, score: 1, key: qLookup };
-    }
     if (map.get(qText)) {
         const val = map.get(qText);
         return { entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null }, score: 1, key: qText };
     }
 
-    const prefixHit = findEntryByQuestionPrefix(map, qLookup, isCheckpoint);
+    if (map.get(qLookupNoCode)) {
+        const val = map.get(qLookupNoCode);
+        return {
+            entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null },
+            score: 1,
+            key: qLookupNoCode,
+        };
+    }
+
+    const prefixHit = findEntryByQuestionPrefix(map, qLookupNoCode, isCheckpoint);
     if (prefixHit) return prefixHit;
 
-    const qCore = stripChooseClause(qLookup);
+    const qCore = stripChooseClause(qLookupNoCode);
     let bestKey = null;
     let bestScore = 0;
 
     for (const [key, val] of map) {
         if (pageHasSubstantive && isGenericPtQuestion(key)) continue;
 
-        const keyLookup = stripPtActivityBoilerplate(key) || key;
+        const keyNoCode = key.split('::code::')[0];
+        const keyLookup = stripPtActivityBoilerplate(keyNoCode) || keyNoCode;
         if (stripChooseClause(keyLookup) === qCore) {
             return {
                 entry: isCheckpoint ? val : { answers: val, manual: false, imageUrl: null },
@@ -182,7 +197,7 @@ export function findBestQuestionMatch(map, qText, isCheckpoint) {
                 key,
             };
         }
-        const score = textSimilarity(keyLookup, qLookup);
+        const score = textSimilarity(keyLookup, qLookupNoCode);
         if (score > bestScore) {
             bestScore = score;
             bestKey = key;
@@ -201,20 +216,29 @@ export function findBestQuestionMatch(map, qText, isCheckpoint) {
     return { entry: null, score: bestScore, key: bestKey };
 }
 
-function lookupEntry(databases, activeDb, qText) {
+function lookupEntry(databases, activeDb, qText, qCode) {
     if (!activeDb.ready) return null;
     const isCheckpoint = isAssessmentEntryMode(activeDb.mode);
-    let result = findBestQuestionMatch(activeDb.map, qText, isCheckpoint);
+    const qKeyWithCode = questionLookupKeyWithCode(qText, null, qCode);
+    const qKeyNoCode = questionLookupKey(qText, null);
+    let result = findBestQuestionMatch(activeDb.map, qKeyWithCode, isCheckpoint);
+    if (!result.entry) result = findBestQuestionMatch(activeDb.map, qKeyNoCode, isCheckpoint);
 
     if (!result.entry && activeDb.mode === 'cyu' && typeof QUIZ_DB !== 'undefined') {
-        result = findBestQuestionMatch(databases.quizMap, qText, false);
+        result = findBestQuestionMatch(databases.quizMap, qKeyWithCode, false);
+        if (!result.entry) result = findBestQuestionMatch(databases.quizMap, qKeyNoCode, false);
     }
     if (!result.entry && activeDb.mode === 'quiz') {
-        result = findBestQuestionMatch(databases.cyuDb, qText, false);
+        result = findBestQuestionMatch(databases.cyuDb, qKeyWithCode, false);
+        if (!result.entry) result = findBestQuestionMatch(databases.cyuDb, qKeyNoCode, false);
     }
     if (!result.entry && activeDb.mode === 'cyu' && typeof CHECKPOINT_DB !== 'undefined') {
-        const cp = findBestQuestionMatch(databases.checkpointMap, qText, true);
+        const cp = findBestQuestionMatch(databases.checkpointMap, qKeyWithCode, true);
         if (cp.entry) result = cp;
+        else {
+            const cp2 = findBestQuestionMatch(databases.checkpointMap, qKeyNoCode, true);
+            if (cp2.entry) result = cp2;
+        }
     }
 
     if (result.entry) {
@@ -294,8 +318,9 @@ export function initDatabases() {
         return 'RAW_DB';
     }
 
-    function lookupEntryCached(activeDb, qText) {
-        const k = `${activeDb.mode}::${normalizeText(qText)}`;
+    function lookupEntryCached(activeDb, qText, qCode) {
+        const codeKey = normalizeCodeForKey(qCode);
+        const k = `${activeDb.mode}::${normalizeText(qText)}::${codeKey}`;
         if (entryLookupCache.has(k)) {
             const hit = entryLookupCache.get(k);
             return hit === LOOKUP_MISS ? null : hit;
@@ -304,6 +329,7 @@ export function initDatabases() {
             { cyuDb, quizMap, checkpointMap, practiceMap, finalExamMap },
             activeDb,
             qText,
+            qCode,
         );
         entryLookupCache.set(k, entry || LOOKUP_MISS);
         return entry;

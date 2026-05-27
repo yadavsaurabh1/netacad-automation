@@ -4,3 +4,4 @@ node_modules/
 scraper/logs/
 extension/runner.js
 extension/data/
+data/.variables_*.sync.mjs
