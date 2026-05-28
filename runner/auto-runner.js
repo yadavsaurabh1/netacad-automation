@@ -384,6 +384,7 @@
       } catch {
       }
       const route = `${src} ${href}`;
+      if (/practice-final-exam/i.test(route)) return false;
       if (/course-final-exam|final-exam/i.test(route)) return true;
     } catch {
     }
@@ -396,13 +397,14 @@
     const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
     for (const span of spans) {
       const t = (span.textContent || "").trim();
+      if (/\bpractice\s+quiz/i.test(t)) return true;
       if (/module\s+(practice\s+and\s+)?quiz/i.test(t)) return true;
       if (/module\s+\d+\s+exam/i.test(t)) return true;
       if (/module\s+exam/i.test(t)) return true;
     }
     if (!doc) return false;
     const hints = deepQuerySelectorAll(".module-title, .page__title-inner, h1, h2", doc);
-    return hints.some((el) => /module\s+(quiz|exam)/i.test((el.textContent || "").trim()));
+    return hints.some((el) => /(module\s+(quiz|exam)|practice\s+quiz)/i.test((el.textContent || "").trim()));
   }
   function isProseCommaAnswer(parts) {
     if (parts.length !== 2) return false;
@@ -582,6 +584,18 @@
       result = findBestQuestionMatch(databases.cyuDb, qKeyWithCode, false);
       if (!result.entry) result = findBestQuestionMatch(databases.cyuDb, qKeyNoCode, false);
     }
+    if (!result.entry && activeDb.mode === "quiz") {
+      result = findBestQuestionMatch(databases.practiceMap, qKeyWithCode, true);
+      if (!result.entry) result = findBestQuestionMatch(databases.practiceMap, qKeyNoCode, true);
+    }
+    if (!result.entry && activeDb.mode === "quiz") {
+      result = findBestQuestionMatch(databases.finalExamMap, qKeyWithCode, true);
+      if (!result.entry) result = findBestQuestionMatch(databases.finalExamMap, qKeyNoCode, true);
+    }
+    if (!result.entry && activeDb.mode === "practice") {
+      result = findBestQuestionMatch(databases.quizMap, qKeyWithCode, false);
+      if (!result.entry) result = findBestQuestionMatch(databases.quizMap, qKeyNoCode, false);
+    }
     if (!result.entry && activeDb.mode === "cyu" && typeof CHECKPOINT_DB !== "undefined") {
       const cp = findBestQuestionMatch(databases.checkpointMap, qKeyWithCode, true);
       if (cp.entry) result = cp;
@@ -619,17 +633,17 @@
     }
     const entryLookupCache = /* @__PURE__ */ new Map();
     function getActiveDb(doc) {
-      if (isFinalExam()) {
-        if (!finalExamMap.size) {
-          return { mode: "final", ready: false, map: null };
-        }
-        return { mode: "final", ready: true, map: finalExamMap };
-      }
       if (isPracticeExam()) {
         if (!practiceMap.size) {
           return { mode: "practice", ready: false, map: null };
         }
         return { mode: "practice", ready: true, map: practiceMap };
+      }
+      if (isFinalExam()) {
+        if (!finalExamMap.size) {
+          return { mode: "final", ready: false, map: null };
+        }
+        return { mode: "final", ready: true, map: finalExamMap };
       }
       if (isCheckpointExam()) {
         if (typeof CHECKPOINT_DB === "undefined") {

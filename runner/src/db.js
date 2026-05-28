@@ -232,6 +232,18 @@ function lookupEntry(databases, activeDb, qText, qCode) {
         result = findBestQuestionMatch(databases.cyuDb, qKeyWithCode, false);
         if (!result.entry) result = findBestQuestionMatch(databases.cyuDb, qKeyNoCode, false);
     }
+    if (!result.entry && activeDb.mode === 'quiz') {
+        result = findBestQuestionMatch(databases.practiceMap, qKeyWithCode, true);
+        if (!result.entry) result = findBestQuestionMatch(databases.practiceMap, qKeyNoCode, true);
+    }
+    if (!result.entry && activeDb.mode === 'quiz') {
+        result = findBestQuestionMatch(databases.finalExamMap, qKeyWithCode, true);
+        if (!result.entry) result = findBestQuestionMatch(databases.finalExamMap, qKeyNoCode, true);
+    }
+    if (!result.entry && activeDb.mode === 'practice') {
+        result = findBestQuestionMatch(databases.quizMap, qKeyWithCode, false);
+        if (!result.entry) result = findBestQuestionMatch(databases.quizMap, qKeyNoCode, false);
+    }
     if (!result.entry && activeDb.mode === 'cyu' && typeof CHECKPOINT_DB !== 'undefined') {
         const cp = findBestQuestionMatch(databases.checkpointMap, qKeyWithCode, true);
         if (cp.entry) result = cp;
@@ -275,17 +287,17 @@ export function initDatabases() {
     const entryLookupCache = new Map();
 
     function getActiveDb(doc) {
-        if (isFinalExam()) {
-            if (!finalExamMap.size) {
-                return { mode: 'final', ready: false, map: null };
-            }
-            return { mode: 'final', ready: true, map: finalExamMap };
-        }
         if (isPracticeExam()) {
             if (!practiceMap.size) {
                 return { mode: 'practice', ready: false, map: null };
             }
             return { mode: 'practice', ready: true, map: practiceMap };
+        }
+        if (isFinalExam()) {
+            if (!finalExamMap.size) {
+                return { mode: 'final', ready: false, map: null };
+            }
+            return { mode: 'final', ready: true, map: finalExamMap };
         }
         if (isCheckpointExam()) {
             if (typeof CHECKPOINT_DB === 'undefined') {

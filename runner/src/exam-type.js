@@ -77,6 +77,7 @@ export function isFinalExam() {
             href = iframe?.contentWindow?.location?.href || '';
         } catch {}
         const route = `${src} ${href}`;
+        if (/practice-final-exam/i.test(route)) return false;
         if (/course-final-exam|final-exam/i.test(route)) return true;
     } catch {}
     return false;
@@ -90,11 +91,12 @@ export function isModuleQuiz(doc) {
     const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
     for (const span of spans) {
         const t = (span.textContent || '').trim();
+        if (/\bpractice\s+quiz\b/i.test(t)) return true;
         if (/module\s+(practice\s+and\s+)?quiz/i.test(t)) return true;
         if (/module\s+\d+\s+exam/i.test(t)) return true;
         if (/module\s+exam/i.test(t)) return true;
     }
     if (!doc) return false;
     const hints = deepQuerySelectorAll('.module-title, .page__title-inner, h1, h2', doc);
-    return hints.some(el => /module\s+(quiz|exam)/i.test((el.textContent || '').trim()));
+    return hints.some(el => /(module\s+(quiz|exam)|practice\s+quiz)/i.test((el.textContent || '').trim()));
 }
