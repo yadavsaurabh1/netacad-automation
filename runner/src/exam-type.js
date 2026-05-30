@@ -61,6 +61,8 @@ export function isFinalExamTitle(text) {
     if (/\bpractice\b/i.test(t)) return false;
     if (/\bcourse\s+final\s+exam\b/i.test(t)) return true;
     if (/\bfinal\s+exam\b/i.test(t)) return true;
+    if (/\bcourse\s+final\s+test\b/i.test(t)) return true;
+    if (/\bfinal\s+test\b/i.test(t)) return true;
     return false;
 }
 
@@ -78,7 +80,7 @@ export function isFinalExam() {
         } catch {}
         const route = `${src} ${href}`;
         if (/practice-final-exam/i.test(route)) return false;
-        if (/course-final-exam|final-exam/i.test(route)) return true;
+        if (/course-final-exam|final-exam|course-final-test|final-test/i.test(route)) return true;
     } catch {}
     return false;
 }

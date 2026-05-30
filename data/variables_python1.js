@@ -559,7 +559,7 @@ const FINAL_EXAM_DB = [
         question: "Consider the following Python code snippet. What will the contents of my_numbers be after execution?",
         code: "my_numbers = [10, 20, 30, 40, 50] for i in range(4): my_numbers.insert(i, my_numbers[-1]) print(my_numbers)",
         answers: [
-            "[50, 50, 50, 50, 10, 20, 30, 40, 50]",
+            "[10, 20, 30, 40, 50, 50, 50, 50]",
         ],
     },
     {
@@ -573,8 +573,8 @@ const FINAL_EXAM_DB = [
         question: "Analyze the following Python code snippet:",
         code: "alpha = [4, 8, 15, 16, 23, 42] beta = alpha[:] beta[2] = 99",
         answers: [
-            "alpha[2] is still equal to 15",
-            "beta is a copy of alpha",
+            "alpha and beta are separate lists; the alpha list remains unchanged after the modification.",
+            "The alpha list is of the same length as the beta list, but their contents are not identical.",
         ],
     },
     {
@@ -588,8 +588,7 @@ const FINAL_EXAM_DB = [
         question: "Given the Python code segment below:",
         code: "def compute_square(x): return x * x def compute_quad(x): return compute_square(x) * compute_square(None) print(compute_quad(4))",
         answers: [
-            "the code will raise a TypeError exception",
-            "TypeError",
+            "The code will cause a runtime error."
         ],
     },
     {
@@ -604,8 +603,7 @@ const FINAL_EXAM_DB = [
         question: "Consider the Python function defined below:",
         code: "def raise_power(base, exponent): return base ** exponent print(raise_power(exponent=3, 2))",
         answers: [
-            "the code will raise a TypeError exception",
-            "TypeError",
+            "The code is erroneous and will not execute."
         ],
     },
     {
@@ -620,7 +618,7 @@ const FINAL_EXAM_DB = [
         code: null,
         answers: [
             "class",
-            "def",
+            "continue",
         ],
     },
     {
@@ -656,15 +654,14 @@ const FINAL_EXAM_DB = [
         question: "Consider the following Python code snippet and determine which statement is correct:",
         code: "inventory = ['apple', 'banana', 'cherry'] backup_inventory = inventory del backup_inventory[:]",
         answers: [
-            "inventory and backup_inventory refer to the same list",
-            "inventory is empty",
+            "Both inventory and backup_inventory contain the same number of items."
         ],
     },
     {
         question: "Consider the following Python code, where only integer inputs are allowed:",
         code: "first_integer = int(input(\"Enter an integer: \")) second_integer = int(input(\"Enter another integer: \")) first_integer = first_integer % second_integer first_integer = first_integer % second_integer second_integer = second_integer % first_integer print(second_integer)",
         answers: [
-            "depends on the input values",
+            "The initial value of first_integer cannot be a multiple of second_integer."
         ],
     },
     {
@@ -722,8 +719,8 @@ const FINAL_EXAM_DB = [
         question: "Which of the following function calls correctly invoke the function defined below? (Select two answers)",
         code: "def custom_function(x, y, z=0): # Body of the function.",
         answers: [
-            "custom_function(0, 1)",
-            "custom_function(0, 1, 2)",
+            "custom_function(y=2, x=1)",
+            "custom_function(4, 5, 6)",
         ],
     },
     {
@@ -751,7 +748,7 @@ const FINAL_EXAM_DB = [
         question: "Given the following Python code:",
         code: "my_dict = {\"apple\": 1, \"banana\": 2, \"cherry\": 3}",
         answers: [
-            "the code is valid and creates a dictionary",
+            "for value in my_dict.values(): print(value)",
         ],
     },
     {
@@ -804,7 +801,7 @@ const FINAL_EXAM_DB = [
         question: "Which of the following snippets shows the correct way of handling multiple exceptions in a single except clause?",
         code: "# A: except (TypeError, ValueError, ZeroDivisionError): # Some code. # B: except TypeError, ValueError, ZeroDivisionError: # Some code. # C: except: (TypeError, ValueError, ZeroDivisionError) # Some code. # D: except: TypeError, ValueError, ZeroDivisionError # Some code. # E: except (TypeError, ValueError, ZeroDivisionError) # Some code. # F: except TypeError, ValueError, ZeroDivisionError # Some code.",
         answers: [
-            "except (TypeError, ValueError, ZeroDivisionError):",
+            "A only"
         ],
     },
     {

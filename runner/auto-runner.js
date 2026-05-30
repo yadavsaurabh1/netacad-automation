@@ -368,6 +368,8 @@
     if (/\bpractice\b/i.test(t)) return false;
     if (/\bcourse\s+final\s+exam\b/i.test(t)) return true;
     if (/\bfinal\s+exam\b/i.test(t)) return true;
+    if (/\bcourse\s+final\s+test\b/i.test(t)) return true;
+    if (/\bfinal\s+test\b/i.test(t)) return true;
     return false;
   }
   function isFinalExam() {
@@ -385,7 +387,7 @@
       }
       const route = `${src} ${href}`;
       if (/practice-final-exam/i.test(route)) return false;
-      if (/course-final-exam|final-exam/i.test(route)) return true;
+      if (/course-final-exam|final-exam|course-final-test|final-test/i.test(route)) return true;
     } catch {
     }
     return false;
@@ -397,7 +399,7 @@
     const spans = getTopDocument().querySelectorAll('span[class*="selectedNodeName"]');
     for (const span of spans) {
       const t = (span.textContent || "").trim();
-      if (/\bpractice\s+quiz/i.test(t)) return true;
+      if (/\bpractice\s+quiz\b/i.test(t)) return true;
       if (/module\s+(practice\s+and\s+)?quiz/i.test(t)) return true;
       if (/module\s+\d+\s+exam/i.test(t)) return true;
       if (/module\s+exam/i.test(t)) return true;

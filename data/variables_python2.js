@@ -589,35 +589,35 @@ const FINAL_EXAM_DB = [
         question: "Analyze the Python statement below:",
         code: "with open('data.csv', 'r') as file: for record in file:",
         answers: [
-            "it opens the file and iterates over its records",
+            "The code is valid because the open function with 'r' mode returns an iterable file object.",
         ],
     },
     {
         question: "Examine the Python assertion statement provided:",
         code: "assert var > 0",
         answers: [
-            "will stop the program when var <= 0",
+            "It will raise an AssertionError if var is less than or equal to 0.",
         ],
     },
     {
         question: "Given the Python code segment below:",
         code: "x = r\"\\\" print(len(x))",
         answers: [
-            "2",
+            "The code will cause a syntax error due to the unescaped sequence at the end of the raw string.",
         ],
     },
     {
         question: "Given the Python code segment below:",
         code: "x = \"\\// print(len(x))",
         answers: [
-            "3",
+            "The code will cause a syntax error due to an improper sequence of escape characters.",
         ],
     },
     {
         question: "Consider the Python code provided below:",
         code: "print(chr(ord('a') + 1))",
         answers: [
-            "b",
+            "The code will print \"b\" as it takes the Unicode code point of 'a', adds 1, and converts it back to a character.",
         ],
     },
     {
@@ -682,7 +682,7 @@ const FINAL_EXAM_DB = [
         question: "What is the expected result of executing the following code?",
         code: "class A: def a(self): print('a') class B: def a(self): print('b') class C(B, A): def c(self): self.a() o = C() o.c()",
         answers: [
-            "b",
+            "The code will print b",
         ],
     },
     {
@@ -718,14 +718,14 @@ const FINAL_EXAM_DB = [
         question: "If s is a stream opened in read mode, the following line of code do?",
         code: "q = s.read(-1)",
         answers: [
-            "reads the whole file",
+            "It reads the entire contents of the stream s.",
         ],
     },
     {
         question: "Assuming that the open() invocation has gone successfully, the following snippet:",
         code: "for x in open('file', 'rt'): print(x)",
         answers: [
-            "reads the file line by line",
+            "read the file line by line",
         ],
     },
     {
@@ -799,14 +799,14 @@ const FINAL_EXAM_DB = [
         question: "If you want to calculate the date that is 30 days after the current date, which of the following code snippets would you use?",
         code: null,
         answers: [
-            "date.today() + timedelta(days=30)",
+            "current_date + timedelta(days=30)",
         ],
     },
     {
         question: "What is the expected result of executing the following Python code?",
         code: "import calendar calendar.setfirstweekday(calendar.FRIDAY) print(calendar.weekheader(2))",
         answers: [
-            "Fr Sa Su Mo Tu We Th",
+            "It will print the names of all the days of the week in a shorter format.",
         ],
     }
 ];
