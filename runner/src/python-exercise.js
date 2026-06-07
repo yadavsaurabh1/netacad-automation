@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { isCheckPending } from './check-button.js';
+import { getCheckAction, tryClickCheckViewButton } from './check-button.js';
 import { deepQuerySelectorAll } from './dom.js';
 import {
     extractQuestionCodeText,
@@ -54,7 +54,7 @@ export function findVisiblePythonCheckExercise(doc, elementVisibilityRatio, minV
             btn.hasAttribute('disabled')) {
             continue;
         }
-        if (!isCheckPending(checkView)) continue;
+        if (!getCheckAction(checkView)) continue;
 
         const vis = elementVisibilityRatio(btn);
         if (vis < minVis || vis <= bestVis) continue;
@@ -104,6 +104,5 @@ export function tryHandlePythonExercise(doc, databases, assessment) {
         }
     }
 
-    ctx.button.click();
-    return true;
+    return tryClickCheckViewButton(ctx.checkView, ctx.button);
 }

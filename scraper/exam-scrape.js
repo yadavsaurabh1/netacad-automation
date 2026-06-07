@@ -37,7 +37,7 @@ import {
 } from "./shared.js";
 
 const DEFAULT_URL =
-    "https://itexamanswers.net/ccna-2-v7-modules-1-4-switching-concepts-vlans-and-intervlan-routing-exam-answers.html";
+    "https://itexamanswers.net/data-analytics-essentials-course-final-exam-answers.html";
 
 const HELP = `Usage: node scraper/exam-scrape.js [--url URL] [--max-pages N] [--delay MS] [--executable PATH]`;
 

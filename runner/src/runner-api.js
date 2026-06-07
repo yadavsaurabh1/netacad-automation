@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { installPageDownloadGuard } from './download-guard.js';
 import { initDatabases } from './db.js';
 import { findCourseIframe } from './iframe.js';
 import { createMainLoop } from './loop.js';
@@ -66,6 +67,7 @@ export function startRunner() {
         clearIframeRetry();
         const win = iframe.contentWindow;
         const doc = iframe.contentDocument || win.document;
+        installPageDownloadGuard(win);
         attachLoop(doc, win);
         activeLoop.start();
     } catch (e) {

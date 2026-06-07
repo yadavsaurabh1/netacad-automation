@@ -16,6 +16,73 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 (() => {
+  var GUARD_KEY = "__netacadDownloadGuardInstalled";
+  var DOWNLOAD_EXT_RE = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|csv|txt|rtf|7z|tar|gz)(\?|#|$)/i;
+  function isDownloadNavigation(href, el) {
+    if (!href || href === "#" || href.startsWith("javascript:")) return false;
+    if (el?.download) return true;
+    if (/^blob:|^data:/i.test(href)) return true;
+    return DOWNLOAD_EXT_RE.test(href);
+  }
+  function isDownloadButton(el) {
+    if (!el?.closest) return false;
+    const btn = el.closest("button, a[download]");
+    if (!btn) return false;
+    if (btn.matches?.('.download-button, #download-btn, [icon="download"]')) return true;
+    if (btn.querySelector?.(".fa-download, .fa.fa-download")) return true;
+    const text = (btn.textContent || "").trim();
+    if (/^download\b/i.test(text)) return true;
+    return false;
+  }
+  function shouldBlockEventTarget(target) {
+    if (isDownloadButton(target)) return true;
+    const anchor = target?.closest?.("a[href], a[download]");
+    if (!anchor) return false;
+    const href = anchor.getAttribute("href") || anchor.href || "";
+    return isDownloadNavigation(href, anchor);
+  }
+  function installPageDownloadGuard(win) {
+    if (!win?.document || win[GUARD_KEY]) return;
+    win[GUARD_KEY] = true;
+    const doc = win.document;
+    const blockEvent = (e) => {
+      if (shouldBlockEventTarget(e.target)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    };
+    for (const type of ["click", "mousedown", "mouseup", "pointerdown", "pointerup", "auxclick"]) {
+      doc.addEventListener(type, blockEvent, true);
+    }
+    const origOpen = win.open;
+    win.open = function patchedOpen(url, ...rest) {
+      if (typeof url === "string" && isDownloadNavigation(url, null)) return null;
+      return origOpen.call(win, url, ...rest);
+    };
+    const origAssign = win.location.assign?.bind(win.location);
+    const origReplace = win.location.replace?.bind(win.location);
+    if (origAssign) {
+      win.location.assign = (url) => {
+        if (typeof url === "string" && isDownloadNavigation(url, null)) return;
+        return origAssign(url);
+      };
+    }
+    if (origReplace) {
+      win.location.replace = (url) => {
+        if (typeof url === "string" && isDownloadNavigation(url, null)) return;
+        return origReplace(url);
+      };
+    }
+    const anchorClickDesc = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, "click");
+    const origAnchorClick = anchorClickDesc?.value;
+    if (origAnchorClick) {
+      HTMLAnchorElement.prototype.click = function patchedAnchorClick() {
+        const href = this.getAttribute("href") || this.href || "";
+        if (isDownloadNavigation(href, this)) return;
+        return origAnchorClick.call(this);
+      };
+    }
+  }
   var PT_ACTIVITY_BOILERPLATE = /open the pt activity\.?\s*perform the tasks in the activity instructions and then answer the question\.?\s*/gi;
   var ACTIVITY_FILE_RE = /\.(pka|pkt|zip|pdf|exe)(?:\?|#|$)/i;
   var DOWNLOAD_LINK_RE = /activity_download|download_btn|file_download/i;
@@ -401,12 +468,13 @@
       const t = (span.textContent || "").trim();
       if (/\bpractice\s+quiz\b/i.test(t)) return true;
       if (/module\s+(practice\s+and\s+)?quiz/i.test(t)) return true;
+      if (/^\d+(?:\.\d+)+\s+quiz\b/i.test(t)) return true;
       if (/module\s+\d+\s+exam/i.test(t)) return true;
       if (/module\s+exam/i.test(t)) return true;
     }
     if (!doc) return false;
     const hints = deepQuerySelectorAll(".module-title, .page__title-inner, h1, h2", doc);
-    return hints.some((el) => /(module\s+(quiz|exam)|practice\s+quiz)/i.test((el.textContent || "").trim()));
+    return hints.some((el) => /(module\s+(quiz|exam)|practice\s+quiz|\d+(?:\.\d+)+\s+quiz)/i.test((el.textContent || "").trim()));
   }
   function isProseCommaAnswer(parts) {
     if (parts.length !== 2) return false;
@@ -713,16 +781,28 @@
     }
     return null;
   }
-  function isCheckPending(checkView) {
-    const solution = deepQuerySelectorAll(".check__solution", checkView)[0];
-    if (!solution) return true;
-    return solution.classList.contains("check__hidden");
+  function getCheckPhase(checkView) {
+    return parseInt(checkView.dataset.netacadCheckPhase || "0", 10) || 0;
+  }
+  function getCheckAction(checkView) {
+    const phase = getCheckPhase(checkView);
+    if (phase >= 2) return null;
+    if (phase === 0) return "show";
+    return "verify";
+  }
+  function tryClickCheckViewButton(checkView, btn) {
+    const action = getCheckAction(checkView);
+    if (!action) return false;
+    btn.click();
+    checkView.dataset.netacadCheckPhase = action === "show" ? "1" : "2";
+    return true;
   }
   function tryClickVisibleCheck(doc, scope = doc, opts = {}) {
     const minVis = opts.minVis ?? 0.15;
     const visFn = opts.elementVisibilityRatio;
     if (!visFn) return false;
     let bestBtn = null;
+    let bestCheckView = null;
     let bestVis = 0;
     for (const btn of deepQuerySelectorAll("button.check__button", scope)) {
       if (btn.disabled || btn.classList.contains("is-disabled") || btn.hasAttribute("disabled")) {
@@ -731,15 +811,15 @@
       const checkView = btn.closest("check-view") || deepQuerySelectorAll("check-view", scope).find(
         (cv) => deepQuerySelectorAll("button.check__button", cv)[0] === btn
       );
-      if (checkView && !isCheckPending(checkView)) continue;
+      if (!checkView || !getCheckAction(checkView)) continue;
       const vis = visFn(btn);
       if (vis < minVis || vis <= bestVis) continue;
       bestVis = vis;
       bestBtn = btn;
+      bestCheckView = checkView;
     }
-    if (!bestBtn) return false;
-    bestBtn.click();
-    return true;
+    if (!bestBtn || !bestCheckView) return false;
+    return tryClickCheckViewButton(bestCheckView, bestBtn);
   }
   function getQuestionBodyEl(qContainer) {
     return deepQuerySelectorAll(
@@ -1462,29 +1542,36 @@
   }
   function createContentHelpers(doc, win, assessment) {
     const { elementVisibilityRatio, isElementSubstantiallyVisible, isAssessmentResultVisible, isOnQuestionSlide } = assessment;
-    function getFirstBrightcoveArticle() {
-      for (const av of deepQuerySelectorAll("article-view", doc)) {
-        if (deepQuerySelectorAll("brightcove-view", av).length) return av;
+    function getVideosInOrder() {
+      return deepQuerySelectorAll("video", doc);
+    }
+    function isVideoPermanentlyHidden(video) {
+      const brightcove = video.closest("brightcove-view");
+      if (brightcove?.classList.contains("animated-hide")) return true;
+      let el = video.parentElement;
+      while (el && el !== doc.body) {
+        const style = win.getComputedStyle(el);
+        if (style.display === "none" || style.visibility === "hidden") return true;
+        if (parseFloat(style.opacity) < 0.05) return true;
+        el = el.parentElement;
+      }
+      return false;
+    }
+    function getNextPendingVideo(processedVideos) {
+      for (const video of getVideosInOrder()) {
+        if (processedVideos.has(video)) continue;
+        if (isVideoPermanentlyHidden(video)) {
+          processedVideos.add(video);
+          continue;
+        }
+        return video;
       }
       return null;
     }
-    function hasReadableContentBeforeMedia() {
-      if (isAssessmentResultVisible(doc)) return false;
-      if (isOnQuestionSlide(doc)) return false;
-      const mediaArticle = getFirstBrightcoveArticle();
-      if (!mediaArticle) return false;
-      const rect = mediaArticle.getBoundingClientRect();
-      const vh = win.innerHeight || doc.documentElement.clientHeight;
-      if (rect.top > vh * 0.45) return true;
-      if (rect.bottom > 0 && rect.top > vh * 0.35) return true;
-      return false;
-    }
-    function shouldInteractWithVideo(video, elWindow = win) {
+    function shouldInteractWithVideo(video, processedVideos, elWindow = win) {
       if (!video) return false;
       if (isAssessmentResultVisible(doc)) return false;
-      if (hasReadableContentBeforeMedia()) return false;
-      const brightcove = video.closest("brightcove-view");
-      if (brightcove?.classList.contains("animated-hide")) return false;
+      if (video !== getNextPendingVideo(processedVideos)) return false;
       const rect = video.getBoundingClientRect();
       if (rect.width < 64 || rect.height < 48) return false;
       const vis = elementVisibilityRatio(video, elWindow);
@@ -1495,13 +1582,6 @@
       const cx = rect.left + rect.width / 2;
       const inset = 12;
       if (cy < inset || cy > vh - inset || cx < inset || cx > vw - inset) return false;
-      let el = video.parentElement;
-      while (el && el !== doc.body) {
-        const style = elWindow.getComputedStyle(el);
-        if (style.display === "none" || style.visibility === "hidden") return false;
-        if (parseFloat(style.opacity) < 0.05) return false;
-        el = el.parentElement;
-      }
       const block = video.closest('block-view, [class*="block"]');
       if (block && elementVisibilityRatio(block, elWindow) < 0.2) return false;
       return true;
@@ -1637,16 +1717,15 @@
     }
     function handleVideoTick(video, processedVideos, runtime) {
       if (processedVideos.has(video)) return false;
-      if (!shouldInteractWithVideo(video, win)) {
-        if (elementVisibilityRatio(video, win) < 0.12) {
-          processedVideos.add(video);
-        }
-        return false;
-      }
+      if (!shouldInteractWithVideo(video, processedVideos, win)) return false;
       processedVideos.add(video);
       runtime.isPaused = true;
+      runtime.isVideoActive = true;
       const failsafeTimer = setTimeout(() => {
-        if (runtime.isPaused) runtime.isPaused = false;
+        if (runtime.isPaused) {
+          runtime.isPaused = false;
+          runtime.isVideoActive = false;
+        }
       }, 1e4);
       video.muted = true;
       const performSkip = () => {
@@ -1656,6 +1735,7 @@
             video.addEventListener("ended", () => {
               clearTimeout(failsafeTimer);
               runtime.isPaused = false;
+              runtime.isVideoActive = false;
             }, { once: true });
           };
           if (!isNaN(video.duration) && video.duration > 0) doSkip();
@@ -1692,7 +1772,7 @@
       return true;
     }
     return {
-      hasReadableContentBeforeMedia,
+      getNextPendingVideo,
       shouldInteractWithVideo,
       createScrollState,
       findInContentNextButton,
@@ -1741,7 +1821,7 @@
       if (!btn || btn.disabled || btn.classList.contains("is-disabled") || btn.hasAttribute("disabled")) {
         continue;
       }
-      if (!isCheckPending(checkView)) continue;
+      if (!getCheckAction(checkView)) continue;
       const vis = elementVisibilityRatio(btn);
       if (vis < minVis || vis <= bestVis) continue;
       const codewindow = findCodewindowBefore(checkView, doc);
@@ -1779,8 +1859,126 @@
         solveQuestion(mcq, entry, ctx.questionText, doc, false);
       }
     }
-    ctx.button.click();
+    return tryClickCheckViewButton(ctx.checkView, ctx.button);
+  }
+  function findBlockRoot(checkView) {
+    return checkView.closest("block-view, article-view, .component__widget, .abs__block") || checkView.parentElement;
+  }
+  function blockMcqsReady(block, assessment) {
+    for (const mcq of deepQuerySelectorAll("mcq-view", block)) {
+      const body = getQuestionBodyEl(mcq);
+      if (!body || assessment.elementVisibilityRatio(body) < 0.15) continue;
+      if (!isQuestionAnswered(mcq)) return false;
+    }
     return true;
+  }
+  function answerBlockMcqs(block, doc, databases, assessment) {
+    const activeDb = databases.getActiveDb(doc);
+    if (!activeDb.ready) return false;
+    let acted = false;
+    for (const mcq of deepQuerySelectorAll("mcq-view", block)) {
+      if (isQuestionAnswered(mcq)) continue;
+      const body = getQuestionBodyEl(mcq);
+      if (!body || assessment.elementVisibilityRatio(body) < 0.15) continue;
+      const qText = extractCleanText(body);
+      const qCode = extractQuestionCodeText(mcq);
+      const entry = databases.lookupEntryCached(activeDb, qText, qCode);
+      if (entry && !shouldTreatAsManual(entry, mcq) && solveQuestion(mcq, entry, qText, doc, false)) {
+        acted = true;
+      }
+    }
+    return acted;
+  }
+  function tryHandleCheckExercise(doc, databases, assessment) {
+    const visFn = assessment.elementVisibilityRatio;
+    for (const checkView of deepQuerySelectorAll("check-view", doc)) {
+      if (!getCheckAction(checkView)) continue;
+      const btn = deepQuerySelectorAll("button.check__button", checkView)[0];
+      if (!btn || btn.disabled || btn.classList.contains("is-disabled") || btn.hasAttribute("disabled")) {
+        continue;
+      }
+      if (visFn(btn) < 0.15) continue;
+      const block = findBlockRoot(checkView);
+      if (answerBlockMcqs(block, doc, databases, assessment)) {
+        return true;
+      }
+      if (!blockMcqsReady(block, assessment)) continue;
+      return tryClickCheckViewButton(checkView, btn);
+    }
+    return false;
+  }
+  function findVisibleHotgridPopup(doc, content) {
+    return deepQuerySelectorAll('[role="dialog"].hotgrid, .notify__popup.hotgrid', doc).find((el) => content.isElementSubstantiallyVisible(el, 0.05));
+  }
+  function tryAdvanceHotgridPopup(doc, content) {
+    if (!findVisibleHotgridPopup(doc, content)) return false;
+    const nextBtn = deepQuerySelectorAll("button.js-hotgrid-control-click.next", doc).find((btn) => !btn.disabled && !btn.classList.contains("hidden") && !btn.classList.contains("disabled") && content.isElementSubstantiallyVisible(btn, 0.05));
+    if (nextBtn) {
+      nextBtn.click();
+      return true;
+    }
+    const closeBtn = deepQuerySelectorAll(
+      "button.js-hotgrid-popup-close, button.js-notify-close-btn",
+      doc
+    ).find((btn) => !btn.disabled && content.isElementSubstantiallyVisible(btn, 0.05));
+    if (closeBtn) {
+      closeBtn.click();
+      return true;
+    }
+    return false;
+  }
+  function tryClickHotgridItem(doc, content) {
+    const items = deepQuerySelectorAll("button.js-hotgrid-item-click", doc).filter((btn) => !btn.classList.contains("is-visited") && !btn.disabled && !btn.classList.contains("disabled") && content.isElementSubstantiallyVisible(btn, 0.35)).sort((a, b) => (parseInt(a.dataset.index, 10) || 0) - (parseInt(b.dataset.index, 10) || 0));
+    if (!items.length) return false;
+    items[0].click();
+    return true;
+  }
+  function tryHandleHotgrid(doc, content, opts = {}) {
+    if (tryAdvanceHotgridPopup(doc, content)) return true;
+    if (opts.allowInlineButtons === false) return false;
+    return tryClickHotgridItem(doc, content);
+  }
+  function findVisiblePageTracerPopup(doc, content) {
+    return deepQuerySelectorAll(
+      '[role="dialog"].pageTracer, .notify__popup.pageTracer, [role="dialog"].pagetracer',
+      doc
+    ).find((el) => content.isElementSubstantiallyVisible(el, 0.05));
+  }
+  function tryAdvancePageTracerPopup(doc, content) {
+    if (!findVisiblePageTracerPopup(doc, content)) return false;
+    const closeBtn = deepQuerySelectorAll(
+      "button.close-button, button#close-btn, button.close-btn",
+      doc
+    ).find((btn) => !btn.disabled && !btn.classList.contains("disabled") && content.isElementSubstantiallyVisible(btn, 0.05));
+    if (closeBtn) {
+      closeBtn.click();
+      return true;
+    }
+    return false;
+  }
+  function tryHandleAccordion(doc, content, clickedButtons, opts) {
+    if (opts.allowInlineButtons === false) return false;
+    const items = deepQuerySelectorAll("button.accordion__item-btn", doc).filter((btn) => btn.getAttribute("aria-expanded") === "false" && !btn.disabled && !btn.classList.contains("disabled") && !clickedButtons.has(btn) && content.isElementSubstantiallyVisible(btn, 0.35)).sort((a, b) => (parseInt(a.dataset.index, 10) || 0) - (parseInt(b.dataset.index, 10) || 0));
+    if (!items.length) return false;
+    items[0].click();
+    clickedButtons.add(items[0]);
+    return true;
+  }
+  function tryHandlePageTracer(doc, content, win, clickedButtons, opts) {
+    if (opts.allowInlineButtons === false) return false;
+    const items = deepQuerySelectorAll("button.pageTracer-button", doc).filter((btn2) => !btn2.disabled && !btn2.classList.contains("disabled") && !clickedButtons.has(btn2) && content.isElementSubstantiallyVisible(btn2, 0.35)).sort((a, b) => (parseInt(a.dataset.pageTracerButtonId, 10) || 0) - (parseInt(b.dataset.pageTracerButtonId, 10) || 0));
+    if (!items.length) return false;
+    const btn = items[0];
+    btn.click();
+    clickedButtons.add(btn);
+    return true;
+  }
+  function tryHandleInteractiveWidgets(doc, content, win, clickedButtons, opts = {}) {
+    installPageDownloadGuard(win);
+    if (tryAdvancePageTracerPopup(doc, content)) return true;
+    if (tryHandleAccordion(doc, content, clickedButtons, opts)) return true;
+    if (tryHandlePageTracer(doc, content, win, clickedButtons, opts)) return true;
+    return false;
   }
   function createMainLoop(doc, win, databases) {
     const assessment = createAssessmentHelpers(doc, win);
@@ -1788,7 +1986,7 @@
     const scroll = content.createScrollState();
     const clickedButtons = /* @__PURE__ */ new Set();
     const processedVideos = /* @__PURE__ */ new Set();
-    const runtime = { isAdvancing: false, isPaused: false, stopped: false };
+    const runtime = { isAdvancing: false, isPaused: false, isVideoActive: false, stopped: false };
     let lastAssessmentQContainer = null;
     let lastAssessmentQContainerTick = 0;
     let tickTimer = null;
@@ -1854,10 +2052,28 @@
         return;
       }
       loopTicks++;
+      if (tryHandleHotgrid(doc, content, { allowInlineButtons: false })) {
+        runtime.isPaused = true;
+        setStatus("Click");
+        bumpCooldown(400);
+        invalidateShadowCache();
+        setTimeout(() => {
+          runtime.isPaused = false;
+        }, 400);
+        scheduleNextTick(getTickDelay());
+        return;
+      }
       const assessmentRoot = assessment.getVisibleAssessmentRoot(0.15);
       const assessmentDone = assessment.isAssessmentResultVisible(doc) || assessmentRoot && assessment.isAssessmentComplete(assessmentRoot);
       const submitOpts = { elementVisibilityRatio: assessment.elementVisibilityRatio };
       if (!assessmentDone && tryHandlePythonExercise(doc, databases, assessment)) {
+        setStatus("Check");
+        bumpCooldown(400);
+        invalidateShadowCache();
+        scheduleNextTick(getTickDelay());
+        return;
+      }
+      if (!assessmentDone && tryHandleCheckExercise(doc, databases, assessment)) {
         setStatus("Check");
         bumpCooldown(400);
         invalidateShadowCache();
@@ -2050,18 +2266,31 @@
         scheduleAssessmentPoll();
         return;
       }
-      if (content.hasReadableContentBeforeMedia() && scroll.getScrollPercent() < 99) {
-        const scrollEl = scroll.getScrollElement();
-        const step = scroll.scrollContainer.useWindow ? win.innerHeight * 0.55 : scrollEl.clientHeight * 0.55;
-        if (scroll.scrollContainer.useWindow) win.scrollBy(0, step);
-        else scrollEl.scrollTop += step;
-        setStatus("Scroll");
-        scheduleNextTick(TICK_MS_SCROLL);
+      const allowInlineButtons = scroll.getScrollPercent() > 10 || scroll.getScrollTop() > 100;
+      if (tryHandleHotgrid(doc, content, { allowInlineButtons })) {
+        runtime.isPaused = true;
+        setStatus("Click");
+        bumpCooldown(400);
+        invalidateShadowCache();
+        setTimeout(() => {
+          runtime.isPaused = false;
+        }, 400);
+        scheduleNextTick(getTickDelay());
         return;
       }
-      const allowInlineButtons = !content.hasReadableContentBeforeMedia() && (scroll.getScrollPercent() > 10 || scroll.getScrollTop() > 100);
+      if (tryHandleInteractiveWidgets(doc, content, win, clickedButtons, { allowInlineButtons })) {
+        runtime.isPaused = true;
+        setStatus("Click");
+        bumpCooldown(400);
+        invalidateShadowCache();
+        setTimeout(() => {
+          runtime.isPaused = false;
+        }, 400);
+        scheduleNextTick(getTickDelay());
+        return;
+      }
       const buttons = deepQuerySelectorAll(
-        "button.open-dialog, button.btn__action:not(.reset-answer):not(.change-question):not(.adaptive-assessment-submit):not(.submit-button), button.tabs__nav-item-btn",
+        "button.open-dialog, button.btn__action:not(.reset-answer):not(.change-question):not(.adaptive-assessment-submit):not(.submit-button):not(.pageTracer-button):not(.check__button), button.tabs__nav-item-btn",
         doc
       );
       for (const btn of buttons) {
@@ -2080,17 +2309,15 @@
           return;
         }
       }
-      if (!content.hasReadableContentBeforeMedia()) {
-        const videos = deepQuerySelectorAll("video", doc).map((v) => ({ video: v }));
+      if (!runtime.isVideoActive) {
         if (assessment.isAssessmentResultVisible(doc)) {
-          videos.forEach(({ video }) => processedVideos.add(video));
+          deepQuerySelectorAll("video", doc).forEach((video) => processedVideos.add(video));
         }
-        for (const { video } of videos) {
-          if (content.handleVideoTick(video, processedVideos, runtime)) {
-            setStatus("Video");
-            scheduleNextTick(getTickDelay());
-            return;
-          }
+        const pendingVideo = content.getNextPendingVideo(processedVideos);
+        if (pendingVideo && content.handleVideoTick(pendingVideo, processedVideos, runtime)) {
+          setStatus("Video");
+          scheduleNextTick(getTickDelay());
+          return;
         }
       }
       const percentDown = scroll.getScrollPercent();
@@ -2221,6 +2448,7 @@
       clearIframeRetry();
       const win = iframe.contentWindow;
       const doc = iframe.contentDocument || win.document;
+      installPageDownloadGuard(win);
       attachLoop(doc, win);
       activeLoop.start();
     } catch (e) {

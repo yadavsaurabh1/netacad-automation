@@ -18,10 +18,28 @@
 
 import { deepQuerySelectorAll } from './dom.js';
 
-export function isCheckPending(checkView) {
-    const solution = deepQuerySelectorAll('.check__solution', checkView)[0];
-    if (!solution) return true;
-    return solution.classList.contains('check__hidden');
+function getCheckPhase(checkView) {
+    return parseInt(checkView.dataset.netacadCheckPhase || '0', 10) || 0;
+}
+
+export function isCheckViewComplete(checkView) {
+    return getCheckPhase(checkView) >= 2;
+}
+
+export function getCheckAction(checkView) {
+    const phase = getCheckPhase(checkView);
+    if (phase >= 2) return null;
+    if (phase === 0) return 'show';
+    return 'verify';
+}
+
+export function tryClickCheckViewButton(checkView, btn) {
+    const action = getCheckAction(checkView);
+    if (!action) return false;
+
+    btn.click();
+    checkView.dataset.netacadCheckPhase = action === 'show' ? '1' : '2';
+    return true;
 }
 
 export function tryClickVisibleCheck(doc, scope = doc, opts = {}) {
@@ -30,6 +48,7 @@ export function tryClickVisibleCheck(doc, scope = doc, opts = {}) {
     if (!visFn) return false;
 
     let bestBtn = null;
+    let bestCheckView = null;
     let bestVis = 0;
 
     for (const btn of deepQuerySelectorAll('button.check__button', scope)) {
@@ -41,16 +60,16 @@ export function tryClickVisibleCheck(doc, scope = doc, opts = {}) {
             deepQuerySelectorAll('check-view', scope).find(cv =>
                 deepQuerySelectorAll('button.check__button', cv)[0] === btn,
             );
-        if (checkView && !isCheckPending(checkView)) continue;
+        if (!checkView || !getCheckAction(checkView)) continue;
 
         const vis = visFn(btn);
         if (vis < minVis || vis <= bestVis) continue;
 
         bestVis = vis;
         bestBtn = btn;
+        bestCheckView = checkView;
     }
 
-    if (!bestBtn) return false;
-    bestBtn.click();
-    return true;
+    if (!bestBtn || !bestCheckView) return false;
+    return tryClickCheckViewButton(bestCheckView, bestBtn);
 }

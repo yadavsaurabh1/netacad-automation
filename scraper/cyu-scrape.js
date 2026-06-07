@@ -37,7 +37,7 @@ import {
 } from "./shared.js";
 
 const DEFAULT_URL =
-    "https://itexamanswers.net/1-5-11-check-your-understanding-verify-directly-connected-networks-answers.html";
+    "https://itexamanswers.net/module-1-4-2-quiz-data-analytic-projects-answers.html";
 
 const HELP = `Usage: node scraper/cyu-scrape.js [--url URL] [--max-pages N] [--delay MS] [--executable PATH]`;
 

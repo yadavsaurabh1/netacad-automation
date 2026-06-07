@@ -35,6 +35,9 @@ import { isSecureExam } from './exam-type.js';
 import { setStatus } from './status.js';
 import { extractCleanText } from './text.js';
 import { tryHandlePythonExercise } from './python-exercise.js';
+import { tryHandleCheckExercise } from './check-exercise.js';
+import { tryHandleHotgrid } from './hotgrid.js';
+import { tryHandleInteractiveWidgets } from './interactive-widgets.js';
 import {
     getQuestionBodyEl,
     extractQuestionCodeText,
@@ -54,7 +57,7 @@ export function createMainLoop(doc, win, databases) {
     const clickedButtons = new Set();
     const processedVideos = new Set();
 
-    const runtime = { isAdvancing: false, isPaused: false, stopped: false };
+    const runtime = { isAdvancing: false, isPaused: false, isVideoActive: false, stopped: false };
     let lastAssessmentQContainer = null;
     let lastAssessmentQContainerTick = 0;
     let tickTimer = null;
@@ -133,12 +136,32 @@ export function createMainLoop(doc, win, databases) {
 
         loopTicks++;
 
+        if (tryHandleHotgrid(doc, content, { allowInlineButtons: false })) {
+            runtime.isPaused = true;
+            setStatus('Click');
+            bumpCooldown(400);
+            invalidateShadowCache();
+            setTimeout(() => {
+                runtime.isPaused = false;
+            }, 400);
+            scheduleNextTick(getTickDelay());
+            return;
+        }
+
         const assessmentRoot = assessment.getVisibleAssessmentRoot(0.15);
         const assessmentDone = assessment.isAssessmentResultVisible(doc) ||
             (assessmentRoot && assessment.isAssessmentComplete(assessmentRoot));
         const submitOpts = { elementVisibilityRatio: assessment.elementVisibilityRatio };
 
         if (!assessmentDone && tryHandlePythonExercise(doc, databases, assessment)) {
+            setStatus('Check');
+            bumpCooldown(400);
+            invalidateShadowCache();
+            scheduleNextTick(getTickDelay());
+            return;
+        }
+
+        if (!assessmentDone && tryHandleCheckExercise(doc, databases, assessment)) {
             setStatus('Check');
             bumpCooldown(400);
             invalidateShadowCache();
@@ -364,22 +387,34 @@ export function createMainLoop(doc, win, databases) {
             return;
         }
 
-        if (content.hasReadableContentBeforeMedia() && scroll.getScrollPercent() < 99) {
-            const scrollEl = scroll.getScrollElement();
-            const step = scroll.scrollContainer.useWindow
-                ? win.innerHeight * 0.55
-                : scrollEl.clientHeight * 0.55;
-            if (scroll.scrollContainer.useWindow) win.scrollBy(0, step);
-            else scrollEl.scrollTop += step;
-            setStatus('Scroll');
-            scheduleNextTick(TICK_MS_SCROLL);
+        const allowInlineButtons = scroll.getScrollPercent() > 10 || scroll.getScrollTop() > 100;
+
+        if (tryHandleHotgrid(doc, content, { allowInlineButtons })) {
+            runtime.isPaused = true;
+            setStatus('Click');
+            bumpCooldown(400);
+            invalidateShadowCache();
+            setTimeout(() => {
+                runtime.isPaused = false;
+            }, 400);
+            scheduleNextTick(getTickDelay());
             return;
         }
 
-        const allowInlineButtons = !content.hasReadableContentBeforeMedia() &&
-            (scroll.getScrollPercent() > 10 || scroll.getScrollTop() > 100);
+        if (tryHandleInteractiveWidgets(doc, content, win, clickedButtons, { allowInlineButtons })) {
+            runtime.isPaused = true;
+            setStatus('Click');
+            bumpCooldown(400);
+            invalidateShadowCache();
+            setTimeout(() => {
+                runtime.isPaused = false;
+            }, 400);
+            scheduleNextTick(getTickDelay());
+            return;
+        }
+
         const buttons = deepQuerySelectorAll(
-            'button.open-dialog, button.btn__action:not(.reset-answer):not(.change-question):not(.adaptive-assessment-submit):not(.submit-button), button.tabs__nav-item-btn',
+            'button.open-dialog, button.btn__action:not(.reset-answer):not(.change-question):not(.adaptive-assessment-submit):not(.submit-button):not(.pageTracer-button):not(.check__button), button.tabs__nav-item-btn',
             doc,
         );
         for (const btn of buttons) {
@@ -399,19 +434,16 @@ export function createMainLoop(doc, win, databases) {
             }
         }
 
-        if (!content.hasReadableContentBeforeMedia()) {
-            const videos = deepQuerySelectorAll('video', doc).map(v => ({ video: v }));
-
+        if (!runtime.isVideoActive) {
             if (assessment.isAssessmentResultVisible(doc)) {
-                videos.forEach(({ video }) => processedVideos.add(video));
+                deepQuerySelectorAll('video', doc).forEach(video => processedVideos.add(video));
             }
 
-            for (const { video } of videos) {
-                if (content.handleVideoTick(video, processedVideos, runtime)) {
-                    setStatus('Video');
-                    scheduleNextTick(getTickDelay());
-                    return;
-                }
+            const pendingVideo = content.getNextPendingVideo(processedVideos);
+            if (pendingVideo && content.handleVideoTick(pendingVideo, processedVideos, runtime)) {
+                setStatus('Video');
+                scheduleNextTick(getTickDelay());
+                return;
             }
         }
 

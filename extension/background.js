@@ -22,9 +22,23 @@ const COURSE_FILES = {
     ccna3: 'data/variables_ccna3.js',
     python1: 'data/variables_python1.js',
     python2: 'data/variables_python2.js',
+    data: 'data/variables_data.js',
 };
 
 const NETACAD_RE = /^https:\/\/([a-z0-9-]+\.)*netacad\.com\//i;
+
+chrome.downloads.onCreated.addListener((item) => {
+    (async () => {
+        const { running } = await chrome.storage.local.get('running');
+        if (!running) return;
+        const fromNetacad = NETACAD_RE.test(item.referrer || '') ||
+            NETACAD_RE.test(item.url || '') ||
+            (item.url || '').startsWith('blob:');
+        if (fromNetacad) {
+            chrome.downloads.cancel(item.id).catch(() => {});
+        }
+    })();
+});
 
 async function getActiveNetacadTab() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });

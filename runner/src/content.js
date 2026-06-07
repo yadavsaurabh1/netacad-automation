@@ -22,34 +22,40 @@ import { deepQuerySelectorAll, getTopDocument } from './dom.js';
 export function createContentHelpers(doc, win, assessment) {
     const { elementVisibilityRatio, isElementSubstantiallyVisible, isAssessmentResultVisible, isOnQuestionSlide } = assessment;
 
-    function getFirstBrightcoveArticle() {
-        for (const av of deepQuerySelectorAll('article-view', doc)) {
-            if (deepQuerySelectorAll('brightcove-view', av).length) return av;
+    function getVideosInOrder() {
+        return deepQuerySelectorAll('video', doc);
+    }
+
+    function isVideoPermanentlyHidden(video) {
+        const brightcove = video.closest('brightcove-view');
+        if (brightcove?.classList.contains('animated-hide')) return true;
+
+        let el = video.parentElement;
+        while (el && el !== doc.body) {
+            const style = win.getComputedStyle(el);
+            if (style.display === 'none' || style.visibility === 'hidden') return true;
+            if (parseFloat(style.opacity) < 0.05) return true;
+            el = el.parentElement;
+        }
+        return false;
+    }
+
+    function getNextPendingVideo(processedVideos) {
+        for (const video of getVideosInOrder()) {
+            if (processedVideos.has(video)) continue;
+            if (isVideoPermanentlyHidden(video)) {
+                processedVideos.add(video);
+                continue;
+            }
+            return video;
         }
         return null;
     }
 
-    function hasReadableContentBeforeMedia() {
-        if (isAssessmentResultVisible(doc)) return false;
-        if (isOnQuestionSlide(doc)) return false;
-
-        const mediaArticle = getFirstBrightcoveArticle();
-        if (!mediaArticle) return false;
-
-        const rect = mediaArticle.getBoundingClientRect();
-        const vh = win.innerHeight || doc.documentElement.clientHeight;
-        if (rect.top > vh * 0.45) return true;
-        if (rect.bottom > 0 && rect.top > vh * 0.35) return true;
-        return false;
-    }
-
-    function shouldInteractWithVideo(video, elWindow = win) {
+    function shouldInteractWithVideo(video, processedVideos, elWindow = win) {
         if (!video) return false;
         if (isAssessmentResultVisible(doc)) return false;
-        if (hasReadableContentBeforeMedia()) return false;
-
-        const brightcove = video.closest('brightcove-view');
-        if (brightcove?.classList.contains('animated-hide')) return false;
+        if (video !== getNextPendingVideo(processedVideos)) return false;
 
         const rect = video.getBoundingClientRect();
         if (rect.width < 64 || rect.height < 48) return false;
@@ -63,14 +69,6 @@ export function createContentHelpers(doc, win, assessment) {
         const cx = rect.left + rect.width / 2;
         const inset = 12;
         if (cy < inset || cy > vh - inset || cx < inset || cx > vw - inset) return false;
-
-        let el = video.parentElement;
-        while (el && el !== doc.body) {
-            const style = elWindow.getComputedStyle(el);
-            if (style.display === 'none' || style.visibility === 'hidden') return false;
-            if (parseFloat(style.opacity) < 0.05) return false;
-            el = el.parentElement;
-        }
 
         const block = video.closest('block-view, [class*="block"]');
         if (block && elementVisibilityRatio(block, elWindow) < 0.2) return false;
@@ -229,18 +227,17 @@ export function createContentHelpers(doc, win, assessment) {
 
     function handleVideoTick(video, processedVideos, runtime) {
         if (processedVideos.has(video)) return false;
-        if (!shouldInteractWithVideo(video, win)) {
-            if (elementVisibilityRatio(video, win) < 0.12) {
-                processedVideos.add(video);
-            }
-            return false;
-        }
+        if (!shouldInteractWithVideo(video, processedVideos, win)) return false;
 
         processedVideos.add(video);
         runtime.isPaused = true;
+        runtime.isVideoActive = true;
 
         const failsafeTimer = setTimeout(() => {
-            if (runtime.isPaused) runtime.isPaused = false;
+            if (runtime.isPaused) {
+                runtime.isPaused = false;
+                runtime.isVideoActive = false;
+            }
         }, 10000);
 
         video.muted = true;
@@ -254,6 +251,7 @@ export function createContentHelpers(doc, win, assessment) {
                     video.addEventListener('ended', () => {
                         clearTimeout(failsafeTimer);
                         runtime.isPaused = false;
+                        runtime.isVideoActive = false;
                     }, { once: true });
                 };
                 if (!isNaN(video.duration) && video.duration > 0) doSkip();
@@ -290,7 +288,7 @@ export function createContentHelpers(doc, win, assessment) {
     }
 
     return {
-        hasReadableContentBeforeMedia,
+        getNextPendingVideo,
         shouldInteractWithVideo,
         createScrollState,
         findInContentNextButton,
