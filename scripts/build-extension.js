@@ -28,7 +28,7 @@ const dataDir = join(extDir, 'data');
 
 mkdirSync(dataDir, { recursive: true });
 
-for (const course of ['ccna1', 'ccna2', 'ccna3', 'python1', 'python2', 'data']) {
+for (const course of ['ccna1', 'ccna2', 'ccna3', 'python1', 'python2', 'data', 'cybersecurity']) {
     cpSync(
         join(root, 'data', `variables_${course}.js`),
         join(dataDir, `variables_${course}.js`),

@@ -23,6 +23,7 @@ const COURSE_FILES = {
     python1: 'data/variables_python1.js',
     python2: 'data/variables_python2.js',
     data: 'data/variables_data.js',
+    cybersecurity: 'data/variables_cybersecurity.js',
 };
 
 const NETACAD_RE = /^https:\/\/([a-z0-9-]+\.)*netacad\.com\//i;

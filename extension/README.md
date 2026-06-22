@@ -36,7 +36,7 @@ This copies CCNA answer data into `extension/data/` and bundles `extension/runne
 2. Open `chrome://extensions`, enable **Developer mode**.
 3. **Load unpacked** → select the `extension/` folder.
 4. Open a NetAcad course on the top-level `www.netacad.com` tab.
-5. Open the extension popup, pick **CCNA1 / CCNA2 / CCNA3**, click **Start**.
+5. Open the extension popup, pick a course, click **Start**.
 
 ## Courses
 
@@ -45,6 +45,10 @@ This copies CCNA answer data into `extension/data/` and bundles `extension/runne
 | CCNA1 | `variables_ccna1.js` | Introduction to Networks |
 | CCNA2 | `variables_ccna2.js` | Switching, Routing, and Wireless Essentials |
 | CCNA3 | `variables_ccna3.js` | Enterprise Networking, Security, and Automation |
+| Python1 | `variables_python1.js` | Python Essentials 1 |
+| Python2 | `variables_python2.js` | Python Essentials 2 |
+| Data | `variables_data.js` | Data Analytics Essentials |
+| Cybersecurity | `variables_cybersecurity.js` | Introduction to Cybersecurity |
 
 To switch course after a run, **reload the NetAcad tab** (answer data cannot be replaced in-page).
 

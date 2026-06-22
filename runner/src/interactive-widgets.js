@@ -79,10 +79,26 @@ function tryHandlePageTracer(doc, content, win, clickedButtons, opts) {
     return true;
 }
 
+export function tryHandleFlipcards(doc, content, clickedButtons) {
+    const items = deepQuerySelectorAll('button.flipcard__item', doc)
+        .filter(btn => !btn.disabled &&
+            !btn.classList.contains('disabled') &&
+            !clickedButtons.has(btn) &&
+            content.isElementSubstantiallyVisible(btn, 0.35) &&
+            btn.querySelector('.flipcard__item-back[aria-hidden="true"]'))
+        .sort((a, b) => (parseInt(a.dataset.index, 10) || 0) - (parseInt(b.dataset.index, 10) || 0));
+
+    if (!items.length) return false;
+    clickedButtons.add(items[0]);
+    items[0].click();
+    return true;
+}
+
 export function tryHandleInteractiveWidgets(doc, content, win, clickedButtons, opts = {}) {
     installPageDownloadGuard(win);
 
     if (tryAdvancePageTracerPopup(doc, content)) return true;
+    if (tryHandleFlipcards(doc, content, clickedButtons)) return true;
     if (tryHandleAccordion(doc, content, clickedButtons, opts)) return true;
     if (tryHandlePageTracer(doc, content, win, clickedButtons, opts)) return true;
     return false;

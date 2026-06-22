@@ -37,7 +37,9 @@ import { extractCleanText } from './text.js';
 import { tryHandlePythonExercise } from './python-exercise.js';
 import { tryHandleCheckExercise } from './check-exercise.js';
 import { tryHandleHotgrid } from './hotgrid.js';
-import { tryHandleInteractiveWidgets } from './interactive-widgets.js';
+import { tryHandleHotgraphic } from './hotgraphic.js';
+import { tryHandleInteractiveWidgets, tryHandleFlipcards } from './interactive-widgets.js';
+import { tryHandleModuleIntroVideo } from './module-intro-video.js';
 import {
     getQuestionBodyEl,
     extractQuestionCodeText,
@@ -110,6 +112,19 @@ export function createMainLoop(doc, win, databases) {
         scheduleNextTick(delay);
     }
 
+    function tryClickWidget(handler) {
+        if (!handler()) return false;
+        runtime.isPaused = true;
+        setStatus('Click');
+        bumpCooldown(400);
+        invalidateShadowCache();
+        setTimeout(() => {
+            runtime.isPaused = false;
+        }, 400);
+        scheduleNextTick(getTickDelay());
+        return true;
+    }
+
     function runMainTick() {
         if (runtime.stopped) return;
         try {
@@ -136,17 +151,17 @@ export function createMainLoop(doc, win, databases) {
 
         loopTicks++;
 
-        if (tryHandleHotgrid(doc, content, { allowInlineButtons: false })) {
-            runtime.isPaused = true;
-            setStatus('Click');
+        if (tryHandleModuleIntroVideo(doc, content, win, runtime, processedVideos)) {
+            setStatus('Video');
             bumpCooldown(400);
             invalidateShadowCache();
-            setTimeout(() => {
-                runtime.isPaused = false;
-            }, 400);
             scheduleNextTick(getTickDelay());
             return;
         }
+
+        if (tryClickWidget(() => tryHandleHotgrid(doc, content, { allowInlineButtons: false }))) return;
+        if (tryClickWidget(() => tryHandleHotgraphic(doc, content, { allowInlineButtons: false }))) return;
+        if (tryClickWidget(() => tryHandleFlipcards(doc, content, clickedButtons))) return;
 
         const assessmentRoot = assessment.getVisibleAssessmentRoot(0.15);
         const assessmentDone = assessment.isAssessmentResultVisible(doc) ||
@@ -389,29 +404,9 @@ export function createMainLoop(doc, win, databases) {
 
         const allowInlineButtons = scroll.getScrollPercent() > 10 || scroll.getScrollTop() > 100;
 
-        if (tryHandleHotgrid(doc, content, { allowInlineButtons })) {
-            runtime.isPaused = true;
-            setStatus('Click');
-            bumpCooldown(400);
-            invalidateShadowCache();
-            setTimeout(() => {
-                runtime.isPaused = false;
-            }, 400);
-            scheduleNextTick(getTickDelay());
-            return;
-        }
-
-        if (tryHandleInteractiveWidgets(doc, content, win, clickedButtons, { allowInlineButtons })) {
-            runtime.isPaused = true;
-            setStatus('Click');
-            bumpCooldown(400);
-            invalidateShadowCache();
-            setTimeout(() => {
-                runtime.isPaused = false;
-            }, 400);
-            scheduleNextTick(getTickDelay());
-            return;
-        }
+        if (tryClickWidget(() => tryHandleHotgrid(doc, content, { allowInlineButtons }))) return;
+        if (tryClickWidget(() => tryHandleHotgraphic(doc, content, { allowInlineButtons }))) return;
+        if (tryClickWidget(() => tryHandleInteractiveWidgets(doc, content, win, clickedButtons, { allowInlineButtons }))) return;
 
         const buttons = deepQuerySelectorAll(
             'button.open-dialog, button.btn__action:not(.reset-answer):not(.change-question):not(.adaptive-assessment-submit):not(.submit-button):not(.pageTracer-button):not(.check__button), button.tabs__nav-item-btn',

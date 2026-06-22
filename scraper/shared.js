@@ -146,6 +146,16 @@ export function parseModuleId(title, url) {
     const slug = url?.match(/(\d+)-(\d+)-(\d+)-/);
     if (slug) return `${slug[1]}.${slug[2]}.${slug[3]}`;
 
+    if (/final\s+exam/i.test(title || "") || /course-final-exam/i.test(url || "")) {
+        return "final-exam";
+    }
+
+    const moduleFromTitle = title?.match(/^Module\s+(\d+)\s*:/i);
+    if (moduleFromTitle) return `module-${moduleFromTitle[1]}`;
+
+    const moduleFromUrl = url?.match(/\/module-(\d+)-/i);
+    if (moduleFromUrl) return `module-${moduleFromUrl[1]}`;
+
     return null;
 }
 
@@ -155,6 +165,10 @@ export function parseExamKey(title, url) {
 
     const slug = url?.match(/modules-(\d+)-(\d+)-/i);
     if (slug) return `${slug[1]}-${slug[2]}`;
+
+    if (/final\s+exam/i.test(title || "") || /course-final-exam/i.test(url || "")) {
+        return "final-exam";
+    }
 
     return null;
 }

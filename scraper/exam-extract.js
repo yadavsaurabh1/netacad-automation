@@ -151,6 +151,7 @@ export function extractExamAnswers() {
 
     const isMarkedCorrect = (li) => {
         if (li.classList.contains("correct_answer")) return true;
+        if (li.querySelector(".correct_answer")) return true;
         if (hasRedMarkup(li) || hasRedStyle(li)) return true;
         for (const marked of li.querySelectorAll("span[style], strong[style], b[style], strong, b")) {
             if (hasRedMarkup(marked) || hasRedStyle(marked)) return true;
@@ -230,6 +231,13 @@ export function extractExamAnswers() {
     const parseList = (ul) => {
         const answers = [];
         ul.querySelectorAll(":scope > li").forEach((li) => {
+            const correctSpan = li.querySelector(".correct_answer");
+            if (correctSpan) {
+                const text = (correctSpan.textContent || correctSpan.innerText || "").trim();
+                if (text) answers.push(text);
+                return;
+            }
+
             if (isMarkedCorrect(li)) {
                 const text = textFromLi(li);
                 if (text) answers.push(text);
@@ -280,6 +288,8 @@ export function extractExamAnswers() {
         let imageUrl = imageFrom(anchor);
         const listAnswers = [];
         const tablePairs = [];
+        const paragraphAnswers = [];
+        let sawUnmarkedUl = false;
         let resolvedQuestion = null;
 
         let nextSibling = anchor.nextElementSibling;
@@ -291,15 +301,28 @@ export function extractExamAnswers() {
             }
 
             if (nextSibling.classList?.contains("message_box")) {
-                if (listAnswers.length === 0 && tablePairs.length === 0) {
+                if (listAnswers.length === 0 && tablePairs.length === 0 && paragraphAnswers.length === 0) {
                     const ulInside = nextSibling.querySelector("ul");
                     if (ulInside) listAnswers.push(...parseList(ulInside));
                 }
-                if (listAnswers.length > 0 || tablePairs.length > 0) break;
+                if (listAnswers.length > 0 || tablePairs.length > 0 || paragraphAnswers.length > 0) break;
             } else if (nextSibling.tagName === "UL") {
-                listAnswers.push(...parseList(nextSibling));
+                const parsed = parseList(nextSibling);
+                if (parsed.length > 0) {
+                    listAnswers.push(...parsed);
+                } else if (nextSibling.querySelectorAll(":scope > li").length > 0) {
+                    sawUnmarkedUl = true;
+                }
             } else if (nextSibling.tagName === "TABLE") {
                 tablePairs.push(...parseTable(nextSibling));
+            } else if (nextSibling.tagName === "P") {
+                const text = (nextSibling.innerText || nextSibling.textContent || "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+                if (text && !/^Explanation/i.test(text)) {
+                    paragraphAnswers.push(text);
+                }
+                imageUrl = imageUrl || imageFrom(nextSibling);
             } else {
                 imageUrl = imageUrl || imageFrom(nextSibling);
             }
@@ -314,7 +337,9 @@ export function extractExamAnswers() {
             entry.answers = tablePairs.map((p) => `${p.left} -> ${p.right}`);
         } else if (listAnswers.length > 0) {
             entry.answers = listAnswers;
-        } else if (isMatch || imageUrl) {
+        } else if (paragraphAnswers.length > 0) {
+            entry.answers = paragraphAnswers;
+        } else if (isMatch || sawUnmarkedUl || imageUrl) {
             entry.manual = true;
             entry.answers = [];
             if (imageUrl) entry.imageUrl = imageUrl;

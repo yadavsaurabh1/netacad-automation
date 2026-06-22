@@ -95,11 +95,11 @@ export function isModuleQuiz(doc) {
         const t = (span.textContent || '').trim();
         if (/\bpractice\s+quiz\b/i.test(t)) return true;
         if (/module\s+(practice\s+and\s+)?quiz/i.test(t)) return true;
-        if (/^\d+(?:\.\d+)+\s+quiz\b/i.test(t)) return true;
+        if (/^\d+(?:\.\d+)+\.?\s+quiz\b/i.test(t)) return true;
         if (/module\s+\d+\s+exam/i.test(t)) return true;
         if (/module\s+exam/i.test(t)) return true;
     }
     if (!doc) return false;
     const hints = deepQuerySelectorAll('.module-title, .page__title-inner, h1, h2', doc);
-    return hints.some(el => /(module\s+(quiz|exam)|practice\s+quiz|\d+(?:\.\d+)+\s+quiz)/i.test((el.textContent || '').trim()));
+    return hints.some(el => /(module\s+(quiz|exam)|practice\s+quiz|\d+(?:\.\d+)+\.?\s+quiz)/i.test((el.textContent || '').trim()));
 }

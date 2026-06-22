@@ -39,8 +39,28 @@ export function normalizeText(str) {
         .toLowerCase();
 }
 
+const CHOOSE_COUNT_RE =
+    /(?:choose|select)\s+(two|three|four|five|six|seven|eight|all(?:\s+that\s+apply)?|one)/i;
+
+const CHOOSE_INSTRUCTION_RE =
+    /^(?:choose|select)\s+(?:two|three|four|five|six|seven|eight|all(?:\s+that\s+apply)?|one)\b/i;
+
+function isChooseInstructionText(text) {
+    const t = normalizeText(text || '');
+    return CHOOSE_INSTRUCTION_RE.test(t) && /\bcorrect\s+answers?\b/.test(t);
+}
+
 export function stripChooseClause(text) {
-    return text.replace(/\s*\(choose\s+(?:two|three|four|all\s+that\s+apply|one)[^)]*\)\s*\.?\s*$/gi, '').trim();
+    let t = String(text ?? '');
+    t = t.replace(
+        /\s*\((?:choose|select)\s+(?:two|three|four|five|six|seven|eight|all\s+that\s+apply|all|one)[^)]*\)\s*\.?\s*$/gi,
+        '',
+    );
+    t = t.replace(
+        /\s*(?:choose|select)\s+(?:two|three|four|five|six|seven|eight|all\s+that\s+apply|all|one)\s+correct\s+answers?\s*\.?\s*$/gi,
+        '',
+    );
+    return t.trim();
 }
 
 export function stripPtActivityBoilerplate(text) {
@@ -144,7 +164,7 @@ export function expandLayerAliases(answers) {
 
 export function expectedSelectionCount(questionText, correctAnswers) {
     const q = normalizeText(questionText || '');
-    const chooseMatch = q.match(/choose\s+(two|three|four|five|six|seven|eight|all)/);
+    const chooseMatch = q.match(CHOOSE_COUNT_RE);
     if (chooseMatch) {
         const map = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, all: correctAnswers.length };
         return map[chooseMatch[1]] || correctAnswers.length;
@@ -192,9 +212,13 @@ export function extractCleanText(el) {
     const clone = el.cloneNode(true);
     clone.querySelectorAll('br').forEach(br => br.replaceWith(' '));
     removeNonQuestionContent(clone);
+    clone.querySelectorAll('p, strong, em, b').forEach(node => {
+        if (isChooseInstructionText(node.textContent)) node.remove();
+    });
     const raw = normalizeText(clone.textContent || clone.innerText);
     const substantive = stripPtActivityBoilerplate(raw);
-    return substantive.length >= 25 ? substantive : raw;
+    const text = substantive.length >= 25 ? substantive : raw;
+    return stripChooseClause(text) || text;
 }
 
 export function normalizeMcqOptionText(str) {
